@@ -25,15 +25,22 @@ class _SigninScreenState extends State<SigninScreen> {
           children: [
             Column(
               children: [
-                const SizedBox(
-                  height: 125,
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 2,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      SvgPicture.asset('assets/icons/logo_signin.svg'),
+                    ],
+                  ),
                 ),
-                SvgPicture.asset('assets/icons/logo_signin.svg'),
-                const SizedBox(
-                  height: 225,
+                SizedBox(
+                  height: MediaQuery.of(context).size.height / 4,
                 ),
-                IconButton(
-                    onPressed: () {
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 61.0),
+                  child: GestureDetector(
+                    onTap: () {
                       GoogleSignIn().signIn().then((account) {
                         if (account != null) {
                           print('Account email: ${account.email}');
@@ -47,7 +54,45 @@ class _SigninScreenState extends State<SigninScreen> {
                         print('Sign-in error: $error');
                       });
                     },
-                    icon: SvgPicture.asset('assets/icons/google_signin.svg'))
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Stack(
+                            alignment: Alignment.centerLeft,
+                            children: [
+                              // 구글 로고 이미지
+                              Padding(
+                                padding: const EdgeInsets.only(left: 4.0),
+                                child: Image.asset(
+                                    'assets/images/google_logo.png'),
+                              ),
+                              // 구글로 시작하기 버튼
+                              Container(
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    width: 1.0,
+                                    color: const Color(0xFFA3A3A3),
+                                  ),
+                                  borderRadius: BorderRadius.circular(10.0),
+                                ),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12.0),
+                                child: const Center(
+                                  child: Text(
+                                    'Google로 시작하기',
+                                    style: TextStyle(
+                                      fontSize: 15.0,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                )
               ],
             ),
           ],
