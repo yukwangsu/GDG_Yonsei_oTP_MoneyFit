@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_financemanager/screens/main/_landing.dart';
+import 'package:flutter_financemanager/screens/main/landing.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 

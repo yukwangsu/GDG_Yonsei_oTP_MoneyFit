@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/screens/main/landing.dart';
 import 'package:flutter_financemanager/screens/onboarding/get_info.dart';
 import 'package:flutter_financemanager/screens/signin/signin_screen.dart';
 // import 'package:google_fonts/google_fonts.dart';
@@ -14,7 +15,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: GetInfo(),
+      home: LandingScreen(),
       // theme: ThemeData(
       //   textTheme: GoogleFonts.interTextTheme(),
       // ),
