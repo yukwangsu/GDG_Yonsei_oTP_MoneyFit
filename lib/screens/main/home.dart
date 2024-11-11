@@ -306,6 +306,32 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(29.2),
                   color: const Color(0xFFF2F4F7),
                 ),
+                child: Column(
+                  children: [
+                    // 최근 지출 text, 지출 추가하기
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 18.0, right: 27.0, left: 27.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            '최근 지출',
+                            style: TextStyle(
+                              fontSize: 12.0,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          arrowButton('지출 추가하기'),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(
+                      height: 16.0,
+                    ),
+                    // 최근 지출 내역 리스트
+                  ],
+                ),
               ),
             ),
           ],
@@ -343,6 +369,34 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             '${model.spend} 원',
             style: const TextStyle(fontSize: 8.0),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget arrowButton(String text) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        // 추후 수정
+        print('터치 감지');
+      },
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 10.0,
+              color: Color(0xFF687D94),
+              decoration: TextDecoration.underline,
+              decorationColor: Color(0xFF687D94), // 밑줄 색상 설정
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.only(bottom: 0.5),
+            child: SvgPicture.asset('assets/icons/arrow_right.svg'),
           ),
         ],
       ),
