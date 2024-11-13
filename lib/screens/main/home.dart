@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
 import 'package:flutter_financemanager/variables.dart';
+import 'package:flutter_financemanager/widgets/add_expenditure.dart';
 import 'package:flutter_financemanager/widgets/pie_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -26,11 +28,43 @@ class _HomeScreenState extends State<HomeScreen> {
     PieModel(count: 6, color: Colors.purple, content: '기타2', spend: 9000),
   ];
 
+  // // 추후 api사용 수정
+  // late Future<List<ExpenditureModel>> pieChartList;
+  // api사용 전 임시 변수
+  List<ExpenditureModel> expenditureList = [
+    ExpenditureModel(
+        svgIcon: 'assets/icons/category_shopping_icon.svg',
+        category: '쇼핑',
+        date: '2024.11.12',
+        spend: 50000),
+    ExpenditureModel(
+        svgIcon: 'assets/icons/category_shopping_icon.svg',
+        category: '쇼핑',
+        date: '2024.11.12',
+        spend: 555555),
+  ];
+
   @override
   void initState() {
     super.initState();
     setPieChartColor(pieChartList);
     setPieChartCount(pieChartList);
+  }
+
+  String formatCurrency(int amount) {
+    String amountStr = amount.toString();
+    StringBuffer result = StringBuffer();
+
+    int count = 0;
+    for (int i = amountStr.length - 1; i >= 0; i--) {
+      result.write(amountStr[i]);
+      count++;
+      if (count % 3 == 0 && i != 0) {
+        result.write(',');
+      }
+    }
+
+    return result.toString().split('').reversed.join();
   }
 
   void setPieChartColor(List<PieModel> list) {
@@ -242,7 +276,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               children: [
                                 Text(
                                   '지난 달보다',
-                                  style: TextStyle(fontSize: 9.0),
+                                  style: TextStyle(fontSize: 11.0),
                                 ),
                                 Row(
                                   mainAxisSize: MainAxisSize.min,
@@ -251,12 +285,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                     Text(
                                       '100,000 원 ',
                                       style: TextStyle(
-                                          fontSize: 11.0,
+                                          fontSize: 13.0,
                                           fontWeight: FontWeight.bold),
                                     ),
                                     Text(
                                       '절약하셨네요 ',
-                                      style: TextStyle(fontSize: 9.0),
+                                      style: TextStyle(fontSize: 11.0),
                                     ),
                                     // 이모지
                                     Text(
@@ -301,7 +335,6 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Container(
                 width: double.infinity,
-                height: 211.0,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(29.2),
                   color: const Color(0xFFF2F4F7),
@@ -330,6 +363,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       height: 16.0,
                     ),
                     // 최근 지출 내역 리스트
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          left: 31.0, bottom: 8.0, right: 18.0),
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < expenditureList.length; i++)
+                            expenditureListElement(expenditureList[i])
+                        ],
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -362,13 +405,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(right: 10.0),
             child: Text(
               model.content,
-              style: const TextStyle(fontSize: 8.0),
+              style: const TextStyle(fontSize: 11.0),
             ),
           ),
           // 금액
           Text(
-            '${model.spend} 원',
-            style: const TextStyle(fontSize: 8.0),
+            '${formatCurrency(model.spend)} 원',
+            style: const TextStyle(fontSize: 11.0),
           ),
         ],
       ),
@@ -379,24 +422,117 @@ class _HomeScreenState extends State<HomeScreen> {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: () {
-        // 추후 수정
-        print('터치 감지');
+        if (text == '지출 추가하기') {
+          showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return const AddExpenditure();
+              // return Dialog(
+              //   insetPadding: EdgeInsets.zero, // 화면 경계와의 기본 여백 제거
+              //   child: SizedBox(
+              //     width: 300.0,
+              //     height: 181.0,
+              //     child: AlertDialog(
+              //       titlePadding: EdgeInsets.zero, // 제목 패딩 제거
+              //       contentPadding: EdgeInsets.zero, // 콘텐츠 패딩 제거
+              //       actionsPadding: EdgeInsets.zero, // 버튼 영역 패딩 제거
+              //       title: const Text('제목'),
+              //       content: const Text('내용을 입력하세요.'),
+              //       actions: [
+              //         TextButton(
+              //           onPressed: () {
+              //             Navigator.of(context).pop();
+              //           },
+              //           child: const Text('취소'),
+              //         ),
+              //         TextButton(
+              //           onPressed: () {
+              //             Navigator.of(context).pop();
+              //           },
+              //           child: const Text('확인'),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // );
+            },
+          );
+        }
       },
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
             text,
             style: const TextStyle(
-              fontSize: 10.0,
+              fontSize: 13.0,
               color: Color(0xFF687D94),
               decoration: TextDecoration.underline,
               decorationColor: Color(0xFF687D94), // 밑줄 색상 설정
             ),
           ),
-          Padding(
-            padding: const EdgeInsets.only(bottom: 0.5),
-            child: SvgPicture.asset('assets/icons/arrow_right.svg'),
+          SvgPicture.asset('assets/icons/arrow_right.svg'),
+        ],
+      ),
+    );
+  }
+
+  Widget expenditureListElement(ExpenditureModel model) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              SvgPicture.asset(model.svgIcon),
+              const SizedBox(
+                width: 17.0,
+              ),
+              Text(
+                model.category,
+                style: const TextStyle(
+                  fontSize: 13.0,
+                ),
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Text(
+                model.date,
+                style: const TextStyle(
+                  fontSize: 13.0,
+                ),
+              ),
+              const SizedBox(
+                width: 10.0,
+              ),
+              SizedBox(
+                width: 63.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        '-${formatCurrency(model.spend)}',
+                        overflow: TextOverflow.ellipsis, // 말 줄임표 추가
+                        maxLines: 1, // 한 줄로 제한
+                        softWrap: false, // 줄 바꿈 비활성화
+                        textAlign: TextAlign.right, // 텍스트를 오른쪽 정렬
+                        style: const TextStyle(
+                            fontSize: 13.0, color: Color(0xFFFF0000)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Text(
+                ' 원',
+                style: TextStyle(
+                  fontSize: 13.0,
+                ),
+              ),
+            ],
           ),
         ],
       ),

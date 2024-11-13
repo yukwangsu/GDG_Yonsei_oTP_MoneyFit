@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:google_sign_in/google_sign_in.dart';
 
 class SigninScreen extends StatefulWidget {
   const SigninScreen({
@@ -41,18 +41,7 @@ class _SigninScreenState extends State<SigninScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 61.0),
                   child: GestureDetector(
                     onTap: () {
-                      GoogleSignIn().signIn().then((account) {
-                        if (account != null) {
-                          print('Account email: ${account.email}');
-                          print('Account display name: ${account.displayName}');
-                          print('Account ID: ${account.id}');
-                          print('Account photo URL: ${account.photoUrl}');
-                        } else {
-                          print('Sign-in was cancelled.');
-                        }
-                      }).catchError((error) {
-                        print('Sign-in error: $error');
-                      });
+                      SigninService.signin();
                     },
                     child: Row(
                       children: [

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_financemanager/screens/main/landing.dart';
+import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -270,6 +271,7 @@ class _GetInfoState extends State<GetInfo> {
   // 숫자 입력칸을 둘러싸고 있는 컨테이너
   Widget numberField(TextEditingController controller, String text) {
     return Container(
+      height: 40.0,
       decoration: BoxDecoration(
           border: Border.all(
             width: 1.0,
@@ -304,11 +306,15 @@ class _GetInfoState extends State<GetInfo> {
     return TextField(
       controller: controller,
       keyboardType: TextInputType.number, // 숫자 입력 키보드 설정
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly], // 숫자만 입력 가능
+      inputFormatters: [
+        FilteringTextInputFormatter.digitsOnly, // 숫자만 입력 가능
+        NumberInputFormatter(), // ',' 추가
+      ],
       cursorColor: const Color(0xFFA3A3A3), // 커서 색상 설정
       textAlign: TextAlign.end, // 입력 내용을 오른쪽 정렬
       decoration: const InputDecoration(
         border: InputBorder.none, //테두리 없음
+        isDense: true, // 컴팩트하게 설정
       ),
       onTap: () {
         // 텍스트 필드에 포커스가 갈 때마다 커서를 마지막으로 이동

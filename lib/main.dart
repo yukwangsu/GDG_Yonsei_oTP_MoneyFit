@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/screens/main/home.dart';
 import 'package:flutter_financemanager/screens/main/landing.dart';
 import 'package:flutter_financemanager/screens/onboarding/get_info.dart';
 import 'package:flutter_financemanager/screens/signin/signin_screen.dart';
@@ -15,7 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const MaterialApp(
-      home: LandingScreen(),
+      home: SigninScreen(),
       // theme: ThemeData(
       //   textTheme: GoogleFonts.interTextTheme(),
       // ),
