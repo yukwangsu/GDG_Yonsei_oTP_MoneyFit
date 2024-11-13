@@ -66,6 +66,8 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/icons/select_category/
+    - assets/images/select_category/
 
   fonts:
     - family: Inter

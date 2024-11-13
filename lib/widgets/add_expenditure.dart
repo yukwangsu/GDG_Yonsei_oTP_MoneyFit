@@ -168,7 +168,7 @@ class _AddExpenditureState extends State<AddExpenditure> {
       height: 36.0,
       decoration: BoxDecoration(
           border: Border.all(
-            width: 1.0,
+            width: amountController.text.isNotEmpty ? 2.0 : 1.0,
             color: const Color(0xFF8EACCD),
           ),
           borderRadius: BorderRadius.circular(5.0)),

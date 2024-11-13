@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
+import 'package:flutter_svg/svg.dart';
 
 class AddExpenditureSelectCategory extends StatefulWidget {
   const AddExpenditureSelectCategory({super.key});
@@ -31,7 +32,8 @@ class _AddExpenditureSelectCategoryState
     return Center(
       child: Container(
         width: 301.0,
-        height: 324.0, // 수정 필수
+        // height: 335.0, // 수정 필수
+        height: 333.0,
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(15.0),
@@ -51,7 +53,8 @@ class _AddExpenditureSelectCategoryState
               ),
               Wrap(
                 direction: Axis.horizontal,
-                runSpacing: 14.0,
+                spacing: 5.0,
+                runSpacing: 5.0,
                 children: [
                   for (int i = 0; i < categoryList.length; i++)
                     categoryButton(categoryList[i]),
@@ -61,7 +64,6 @@ class _AddExpenditureSelectCategoryState
                 height: 25.0,
               ),
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   cancelButton(),
                   const SizedBox(
@@ -90,39 +92,42 @@ class _AddExpenditureSelectCategoryState
           }
         });
       },
-      child: SizedBox(
-        width: 115.0,
-        child: Row(
-          children: [
-            selectedCategory == name
-                //선택된 카테고리일 경우
-                ? Container(
-                    width: 14.0,
-                    height: 14.0,
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF8EACCD),
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                  )
-                //선택되지 않은 카테고리일 경우
-                : Container(
-                    width: 14.0,
-                    height: 14.0,
-                    decoration: BoxDecoration(
-                      border: Border.all(
-                          width: 1.0, color: const Color(0xFF8EACCD)),
-                      borderRadius: BorderRadius.circular(3.0),
-                    ),
-                  ),
-            const SizedBox(
-              width: 10.0,
+      child: Stack(
+        children: [
+          SizedBox(
+            width: 55.0,
+            height: 62.0,
+            child: Column(
+              children: [
+                const SizedBox(
+                  height: 6.0,
+                ),
+                Image.asset(
+                    'assets/images/select_category/${categoryIconNameMap[name]}.png'),
+                const SizedBox(
+                  height: 5.0,
+                ),
+                Text(
+                  name,
+                  style: const TextStyle(fontSize: 12.0),
+                ),
+              ],
             ),
-            Text(
-              name,
-              style: const TextStyle(fontSize: 13.0),
+          ),
+          // 선택 됐을 때 테두리 생성
+          if (selectedCategory == name)
+            Container(
+              width: 55.0,
+              height: 62.0,
+              decoration: BoxDecoration(
+                border: Border.all(
+                  width: 2.0,
+                  color: const Color(0xFFD2E0FB),
+                ),
+                borderRadius: BorderRadius.circular(13.0),
+              ),
             ),
-          ],
-        ),
+        ],
       ),
     );
   }
