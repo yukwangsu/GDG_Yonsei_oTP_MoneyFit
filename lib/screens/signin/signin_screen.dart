@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/screens/onboarding/get_info.dart';
 import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_svg/svg.dart';
 
@@ -40,8 +41,15 @@ class _SigninScreenState extends State<SigninScreen> {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 61.0),
                   child: GestureDetector(
-                    onTap: () {
-                      SigninService.signin();
+                    onTap: () async {
+                      final bool signinResult = await SigninService.signin();
+                      if (signinResult) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const GetInfo()),
+                        );
+                      }
                     },
                     child: Row(
                       children: [
