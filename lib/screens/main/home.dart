@@ -376,58 +376,69 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(29.2),
                   color: const Color(0xFFF2F4F7),
                 ),
-                child: Column(
+                child: Stack(
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 18.0, right: 21.0, left: 21.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Row(
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(
+                              top: 18.0, right: 21.0, left: 21.0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              dropDownButtonAge(),
-                              const SizedBox(
-                                width: 7.0,
+                              Row(
+                                children: [
+                                  dropDownButtonAge(),
+                                  const SizedBox(
+                                    width: 7.0,
+                                  ),
+                                  dropDownButtonGender(),
+                                  const SizedBox(
+                                    width: 7.0,
+                                  ),
+                                  const Text(
+                                    '과 비교해보기',
+                                    style: TextStyle(
+                                      fontSize: 12.0,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              dropDownButtonGender(),
-                              const SizedBox(
-                                width: 7.0,
-                              ),
-                              const Text(
-                                '과 비교해보기',
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
+                              arrowButton('카테고리 수정'),
                             ],
                           ),
-                          arrowButton('카테고리 수정'),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            for (int i = 0;
-                                i < comparisonCategoryList.length;
-                                i++) ...[
-                              barChart(
-                                comparisonCategoryList[i],
-                                mySpend.averageSpendMap[
-                                    comparisonCategoryList[i]]!,
-                                comparisonAverage.averageSpendMap[
-                                    comparisonCategoryList[i]]!,
-                                max(comparisonAverage.max, mySpend.max),
-                              ),
-                            ]
-                          ],
                         ),
-                      ),
+                        // bar chart 모음
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Row(
+                              children: [
+                                for (int i = 0;
+                                    i < comparisonCategoryList.length;
+                                    i++) ...[
+                                  barChart(
+                                    comparisonCategoryList[i],
+                                    mySpend.averageSpendMap[
+                                        comparisonCategoryList[i]]!,
+                                    comparisonAverage.averageSpendMap[
+                                        comparisonCategoryList[i]]!,
+                                    max(comparisonAverage.max, mySpend.max),
+                                  ),
+                                ]
+                              ],
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    // bar chart 범례
+                    Positioned(
+                      top: 56.0,
+                      right: 20.0,
+                      child: barChartLegend(),
                     )
                   ],
                 ),
@@ -872,6 +883,59 @@ class _HomeScreenState extends State<HomeScreen> {
         });
         Navigator.pop(context);
       },
+    );
+  }
+
+  Widget barChartLegend() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Container(
+              width: 12.0,
+              height: 12.0,
+              decoration: BoxDecoration(
+                  color: const Color(0xFF8EACCD),
+                  borderRadius: BorderRadius.circular(3.0)),
+            ),
+            const SizedBox(
+              width: 7.0,
+            ),
+            const Text(
+              '나',
+              style: TextStyle(
+                fontSize: 10.0,
+                height: 1.2,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
+        Row(
+          children: [
+            Container(
+              width: 12.0,
+              height: 12.0,
+              decoration: BoxDecoration(
+                  color: const Color(0xFFD9D9D9),
+                  borderRadius: BorderRadius.circular(3.0)),
+            ),
+            const SizedBox(
+              width: 7.0,
+            ),
+            const Text(
+              '평균',
+              style: TextStyle(
+                fontSize: 10.0,
+                height: 1.2,
+              ),
+            ),
+          ],
+        )
+      ],
     );
   }
 }
