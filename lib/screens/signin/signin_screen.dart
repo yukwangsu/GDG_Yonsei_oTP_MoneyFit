@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/screens/main/landing.dart';
 import 'package:flutter_financemanager/screens/onboarding/get_info.dart';
 import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_svg/svg.dart';
@@ -14,6 +15,25 @@ class SigninScreen extends StatefulWidget {
 
 class _SigninScreenState extends State<SigninScreen> {
   // late Future<GoogleSignInAccount?> googleSignInAccount;
+  late Future<bool> googleSigninResult;
+
+  // result == -1: error, result == 0: new member, result == 1: existing member
+  void checkGoogleSigninResult(int result) async {
+    print('signinResult: $result');
+
+    if (result == 0) {
+      // result == 0: new member 일 때만 GetInfo로 네비게이션
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const GetInfo()),
+      );
+    } else if (result == 1) {
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => const LandingScreen()),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -42,14 +62,10 @@ class _SigninScreenState extends State<SigninScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 61.0),
                   child: GestureDetector(
                     onTap: () async {
-                      final bool signinResult = await SigninService.signin();
-                      if (signinResult) {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                              builder: (context) => const GetInfo()),
-                        );
-                      }
+                      final int googleSigninResult = await SigninService
+                          .signin(); // signin 작업이 완료될 때까지 기다림
+                      checkGoogleSigninResult(
+                          googleSigninResult); // 완료된 후 결과 전달
                     },
                     child: Row(
                       children: [

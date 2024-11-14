@@ -1,8 +1,13 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/models/comparison_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure.dart';
+import 'package:flutter_financemanager/widgets/edit_comparison_category.dart';
+import 'package:flutter_financemanager/widgets/list_border_line.dart';
 import 'package:flutter_financemanager/widgets/pie_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -14,7 +19,15 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  // 최대 legend 개수
   final int _maxLegendTotalExpenditure = 4;
+  // 비교 연령 기본값
+  String comparisonTargetAge = '20대';
+  // 비교 성별 기본값
+  String comparisonTargetGender = '여성';
+  // 비교 카테고리 리스트 기본값
+  List<String> comparisonCategoryList = ['식비', '주거', '이동'];
+
   // // 추후 api사용 수정
   // late Future<List<PieModel>> pieChartList;
   // api사용 전 임시 변수
@@ -27,6 +40,44 @@ class _HomeScreenState extends State<HomeScreen> {
     PieModel(count: 4, color: Colors.cyan, content: '식비', spend: 50000),
     PieModel(count: 6, color: Colors.purple, content: '기타2', spend: 9000),
   ];
+
+  // // 추후 api사용 수정
+  // late Future<ComparisonModel> comparisonAverage;
+  // api사용 전 임시 변수
+  ComparisonModel comparisonAverage = ComparisonModel(
+    averageSpendMap: {
+      '쇼핑': 300000,
+      '이동': 80000,
+      '식비': 600000,
+      '의료': 40000,
+      '생활': 300000,
+      '여행': 50000,
+      '주거': 500000,
+      '선물': 100000,
+      '자녀': 0,
+      '학습': 30000,
+      '취미': 100000,
+      '기타': 40000,
+    },
+    max: 600000,
+  );
+  ComparisonModel mySpend = ComparisonModel(
+    averageSpendMap: {
+      '쇼핑': 200000,
+      '이동': 40000,
+      '식비': 400000,
+      '의료': 6000,
+      '생활': 100000,
+      '여행': 60000,
+      '주거': 530000,
+      '선물': 30000,
+      '자녀': 0,
+      '학습': 20000,
+      '취미': 10000,
+      '기타': 70000,
+    },
+    max: 530000,
+  );
 
   // // 추후 api사용 수정
   // late Future<List<ExpenditureModel>> pieChartList;
@@ -311,10 +362,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-
             const SizedBox(
               height: 27.0,
             ),
+
             // 2. Home 화면 내용 - 비교하기
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -325,11 +376,67 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(29.2),
                   color: const Color(0xFFF2F4F7),
                 ),
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                          top: 18.0, right: 21.0, left: 21.0),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              dropDownButtonAge(),
+                              const SizedBox(
+                                width: 7.0,
+                              ),
+                              dropDownButtonGender(),
+                              const SizedBox(
+                                width: 7.0,
+                              ),
+                              const Text(
+                                '과 비교해보기',
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          ),
+                          arrowButton('카테고리 수정'),
+                        ],
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                      child: SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        child: Row(
+                          children: [
+                            for (int i = 0;
+                                i < comparisonCategoryList.length;
+                                i++) ...[
+                              barChart(
+                                comparisonCategoryList[i],
+                                mySpend.averageSpendMap[
+                                    comparisonCategoryList[i]]!,
+                                comparisonAverage.averageSpendMap[
+                                    comparisonCategoryList[i]]!,
+                                max(comparisonAverage.max, mySpend.max),
+                              ),
+                            ]
+                          ],
+                        ),
+                      ),
+                    )
+                  ],
+                ),
               ),
             ),
             const SizedBox(
               height: 27.0,
             ),
+
             // 3. Home 화면 내용 - 최근 지출
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
@@ -344,7 +451,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // 최근 지출 text, 지출 추가하기
                     Padding(
                       padding: const EdgeInsets.only(
-                          top: 18.0, right: 27.0, left: 27.0),
+                          top: 18.0, right: 21.0, left: 27.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
@@ -418,45 +525,234 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Widget dropDownButtonAge() {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          // shape를 사용해서 BorderRadius 설정.
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(25.0),
+            ),
+          ),
+          backgroundColor: Colors.white,
+          builder: (BuildContext context) {
+            return SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0, vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (int i = 1; i < 10; i++) ...[
+                      comparisonTargetAgeList(context, '${i}0대'),
+                      const ListBorderLine(), //bottom sheet 경계선
+                    ]
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        width: 58.0,
+        height: 26.0,
+        decoration: BoxDecoration(
+          color: const Color(0xFFD2E0FB),
+          borderRadius: BorderRadius.circular(5.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2), // 그림자 색상
+              blurRadius: 3.0, // 흐림 정도
+              offset: const Offset(0, 2), // 그림자의 위치 (x, y)
+            ),
+          ],
+        ),
+        padding:
+            const EdgeInsets.only(top: 5.0, right: 7.0, bottom: 5.0, left: 9.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              comparisonTargetAge,
+              style: const TextStyle(
+                fontSize: 13.0,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+            SvgPicture.asset('assets/icons/dropdown_down.svg'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget dropDownButtonGender() {
+    return GestureDetector(
+      onTap: () {
+        showModalBottomSheet(
+          context: context,
+          // shape를 사용해서 BorderRadius 설정.
+          shape: const RoundedRectangleBorder(
+            borderRadius: BorderRadius.vertical(
+              top: Radius.circular(25.0),
+            ),
+          ),
+          backgroundColor: Colors.white,
+          builder: (BuildContext context) {
+            return SingleChildScrollView(
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 20.0, vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    comparisonTargetGenderList(context, '남성'),
+                    const ListBorderLine(), //bottom sheet 경계선
+                    comparisonTargetGenderList(context, '여성'),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+      child: Container(
+        width: 58.0,
+        height: 26.0,
+        decoration: BoxDecoration(
+          color: const Color(0xFFD2E0FB),
+          borderRadius: BorderRadius.circular(5.0),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.2), // 그림자 색상
+              blurRadius: 3.0, // 흐림 정도
+              offset: const Offset(0, 2), // 그림자의 위치 (x, y)
+            ),
+          ],
+        ),
+        padding: const EdgeInsets.only(
+            top: 5.0, right: 7.0, bottom: 5.0, left: 10.0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              comparisonTargetGender,
+              style: const TextStyle(
+                fontSize: 13.0,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
+            ),
+            SvgPicture.asset('assets/icons/dropdown_down.svg'),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget barChart(String name, int mine, int comp, int max) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 15.0),
+      child: SizedBox(
+        width: 60.0,
+        height: 155.0,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                SizedBox(
+                  width: 30.0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        mine.toString(),
+                        style: const TextStyle(fontSize: 7.0),
+                      ),
+                      Container(
+                        width: 13.0,
+                        height: 105 * (mine / max),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFF8EACCD),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8.0),
+                            topRight: Radius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  width: 30.0,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Text(
+                        comp.toString(),
+                        style: const TextStyle(fontSize: 7.0),
+                      ),
+                      Container(
+                        width: 13.0,
+                        height: 105 * (comp / max),
+                        decoration: const BoxDecoration(
+                          color: Color(0xFFD9D9D9),
+                          borderRadius: BorderRadius.only(
+                            topLeft: Radius.circular(8.0),
+                            topRight: Radius.circular(8.0),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              ],
+            ),
+            const SizedBox(
+              height: 3.0,
+            ),
+            Text(
+              name,
+              style: const TextStyle(fontSize: 10.0),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   Widget arrowButton(String text) {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {
+      onTap: () async {
         if (text == '지출 추가하기') {
           showDialog(
             context: context,
             builder: (BuildContext context) {
               return const AddExpenditure();
-              // return Dialog(
-              //   insetPadding: EdgeInsets.zero, // 화면 경계와의 기본 여백 제거
-              //   child: SizedBox(
-              //     width: 300.0,
-              //     height: 181.0,
-              //     child: AlertDialog(
-              //       titlePadding: EdgeInsets.zero, // 제목 패딩 제거
-              //       contentPadding: EdgeInsets.zero, // 콘텐츠 패딩 제거
-              //       actionsPadding: EdgeInsets.zero, // 버튼 영역 패딩 제거
-              //       title: const Text('제목'),
-              //       content: const Text('내용을 입력하세요.'),
-              //       actions: [
-              //         TextButton(
-              //           onPressed: () {
-              //             Navigator.of(context).pop();
-              //           },
-              //           child: const Text('취소'),
-              //         ),
-              //         TextButton(
-              //           onPressed: () {
-              //             Navigator.of(context).pop();
-              //           },
-              //           child: const Text('확인'),
-              //         ),
-              //       ],
-              //     ),
-              //   ),
-              // );
             },
           );
+        } else if (text == '카테고리 수정') {
+          var selectedComparisonCategoryResult = await showDialog(
+            context: context,
+            builder: (BuildContext context) {
+              return EditComparisonCategory(
+                currentCategoryList: comparisonCategoryList,
+              );
+            },
+          );
+          if (selectedComparisonCategoryResult != null) {
+            setState(() {
+              comparisonCategoryList = selectedComparisonCategoryResult;
+            });
+          }
         }
       },
       child: Row(
@@ -536,6 +832,46 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget comparisonTargetAgeList(BuildContext context, String listContent) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero, // default Padding을 0으로 설정
+      title: Text(
+        listContent,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16.0,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          comparisonTargetAge = listContent;
+        });
+        Navigator.pop(context);
+      },
+    );
+  }
+
+  Widget comparisonTargetGenderList(BuildContext context, String listContent) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero, // default Padding을 0으로 설정
+      title: Text(
+        listContent,
+        style: const TextStyle(
+          color: Colors.black,
+          fontSize: 16.0,
+          fontWeight: FontWeight.w400,
+        ),
+      ),
+      onTap: () {
+        setState(() {
+          comparisonTargetGender = listContent;
+        });
+        Navigator.pop(context);
+      },
     );
   }
 }

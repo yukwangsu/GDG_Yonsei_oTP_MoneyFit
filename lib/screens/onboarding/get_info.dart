@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_financemanager/screens/main/landing.dart';
+import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,17 +26,22 @@ class _GetInfoState extends State<GetInfo> {
   int age = -1;
 
   //다음 버튼을 눌렀을 때
-  void onClickButtonHandler() {
+  void onClickButtonHandler() async {
     if (nameController.text.isNotEmpty &&
         incomeController.text.isNotEmpty &&
         ageController.text.isNotEmpty &&
         selectedGender.isNotEmpty &&
         selectedJob.isNotEmpty) {
-      // 추후 추가
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const LandingScreen()),
-      );
+      // api 사용
+      var result = await SigninService.submitInfo(nameController.text,
+          selectedGender, incomeController.text, selectedJob);
+      if (result) {
+        print('유저 정보 입력 성공');
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const LandingScreen()),
+        );
+      }
     }
   }
 
