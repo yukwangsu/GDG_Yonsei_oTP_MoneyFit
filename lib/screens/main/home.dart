@@ -118,9 +118,19 @@ class _HomeScreenState extends State<HomeScreen> {
     return result.toString().split('').reversed.join();
   }
 
+  // void setPieChartColor(List<PieModel> list) {
+  //   for (int i = 0; i < list.length; i++) {
+  //     list[i].color = pieChartColorList[i % pieChartColorList.length];
+  //   }
+  // }
+
   void setPieChartColor(List<PieModel> list) {
     for (int i = 0; i < list.length; i++) {
-      list[i].color = pieChartColorList[i % pieChartColorList.length];
+      if (i < 4) {
+        list[i].color = pieChartColorList[i];
+      } else {
+        list[i].color = pieChartColorList[pieChartColorList.length - 1];
+      }
     }
   }
 
@@ -715,9 +725,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(
                       width: 50.0,
-                      child: Text(
-                        formatCurrency(mine),
-                        style: const TextStyle(fontSize: 10.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              formatCurrency(mine),
+                              overflow: TextOverflow.ellipsis, // 말 줄임표 추가
+                              maxLines: 1, // 한 줄로 제한
+                              softWrap: false, // 줄 바꿈 비활성화
+                              style: const TextStyle(fontSize: 10.0),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -745,9 +764,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     SizedBox(
                       width: 50.0,
-                      child: Text(
-                        formatCurrency(comp),
-                        style: const TextStyle(fontSize: 10.0),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              formatCurrency(comp),
+                              overflow: TextOverflow.ellipsis, // 말 줄임표 추가
+                              maxLines: 1, // 한 줄로 제한
+                              softWrap: false, // 줄 바꿈 비활성화
+                              style: const TextStyle(fontSize: 10.0),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
