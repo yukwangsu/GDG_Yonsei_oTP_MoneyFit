@@ -191,32 +191,34 @@ class _HomeScreenState extends State<HomeScreen> {
                         child: Column(
                           children: [
                             // 총 지출 금액
-                            const Padding(
-                              padding: EdgeInsets.only(top: 18.0, left: 27.0),
+                            Padding(
+                              padding:
+                                  const EdgeInsets.only(top: 18.0, left: 27.0),
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
+                                  const Text(
                                     '총 지출',
                                     style: TextStyle(
                                         fontSize: 12.0,
                                         fontWeight: FontWeight.bold),
                                   ),
-                                  SizedBox(
+                                  const SizedBox(
                                     height: 7.0,
                                   ),
                                   Row(
                                     children: [
                                       Padding(
-                                        padding: EdgeInsets.only(top: 3.0),
+                                        padding:
+                                            const EdgeInsets.only(top: 3.0),
                                         child: Text(
-                                          '1,253,500',
-                                          style: TextStyle(
+                                          formatCurrency(1253500),
+                                          style: const TextStyle(
                                               fontSize: 20.0,
                                               fontWeight: FontWeight.bold),
                                         ),
                                       ),
-                                      Text(
+                                      const Text(
                                         ' 원',
                                         style: TextStyle(
                                             fontSize: 20.0, height: 1.5),
@@ -322,10 +324,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            child: const Column(
+                            child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                Text(
+                                const Text(
                                   '지난 달보다',
                                   style: TextStyle(fontSize: 11.0),
                                 ),
@@ -334,17 +336,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     // 절약한 금액
                                     Text(
-                                      '100,000 원 ',
-                                      style: TextStyle(
+                                      '${formatCurrency(100000)} 원 ',
+                                      style: const TextStyle(
                                           fontSize: 13.0,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    Text(
+                                    const Text(
                                       '절약하셨네요 ',
                                       style: TextStyle(fontSize: 11.0),
                                     ),
                                     // 이모지
-                                    Text(
+                                    const Text(
                                       '\u{1F389}',
                                       style: TextStyle(fontSize: 11.0),
                                     ),
@@ -371,7 +373,7 @@ class _HomeScreenState extends State<HomeScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: Container(
                 width: double.infinity,
-                height: 211.0,
+                height: 256.0,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(29.2),
                   color: const Color(0xFFF2F4F7),
@@ -379,6 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 child: Stack(
                   children: [
                     Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Padding(
                           padding: const EdgeInsets.only(
@@ -411,24 +414,31 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         // bar chart 모음
                         Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                              children: [
-                                for (int i = 0;
-                                    i < comparisonCategoryList.length;
-                                    i++) ...[
-                                  barChart(
-                                    comparisonCategoryList[i],
-                                    mySpend.averageSpendMap[
-                                        comparisonCategoryList[i]]!,
-                                    comparisonAverage.averageSpendMap[
-                                        comparisonCategoryList[i]]!,
-                                    max(comparisonAverage.max, mySpend.max),
-                                  ),
-                                ]
-                              ],
+                          padding: const EdgeInsets.only(
+                              top: 25.0, right: 21.0, bottom: 20.0, left: 21.0),
+                          child: SizedBox(
+                            height: 160.0,
+                            child: SingleChildScrollView(
+                              scrollDirection: Axis.vertical,
+                              child: Column(
+                                children: [
+                                  for (int i = 0;
+                                      i < comparisonCategoryList.length;
+                                      i++) ...[
+                                    barChart(
+                                      comparisonCategoryList[i],
+                                      mySpend.averageSpendMap[
+                                          comparisonCategoryList[i]]!,
+                                      comparisonAverage.averageSpendMap[
+                                          comparisonCategoryList[i]]!,
+                                      max(comparisonAverage.max, mySpend.max),
+                                    ),
+                                    const SizedBox(
+                                      height: 20.0,
+                                    )
+                                  ]
+                                ],
+                              ),
                             ),
                           ),
                         )
@@ -666,75 +676,86 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget barChart(String name, int mine, int comp, int max) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 15.0),
-      child: SizedBox(
-        width: 60.0,
-        height: 155.0,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                SizedBox(
-                  width: 30.0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        mine.toString(),
-                        style: const TextStyle(fontSize: 7.0),
-                      ),
-                      Container(
-                        width: 13.0,
-                        height: 105 * (mine / max),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFF8EACCD),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8.0),
-                            topRight: Radius.circular(8.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  width: 30.0,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Text(
-                        comp.toString(),
-                        style: const TextStyle(fontSize: 7.0),
-                      ),
-                      Container(
-                        width: 13.0,
-                        height: 105 * (comp / max),
-                        decoration: const BoxDecoration(
-                          color: Color(0xFFD9D9D9),
-                          borderRadius: BorderRadius.only(
-                            topLeft: Radius.circular(8.0),
-                            topRight: Radius.circular(8.0),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              ],
-            ),
-            const SizedBox(
-              height: 3.0,
-            ),
-            Text(
+    double barChartAreaWidth = MediaQuery.of(context).size.width - 40.0 - 21.0;
+    return SizedBox(
+      width: barChartAreaWidth,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 35.0,
+            child: Text(
               name,
-              style: const TextStyle(fontSize: 10.0),
-            )
-          ],
-        ),
+              style: const TextStyle(fontSize: 12.0),
+            ),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SizedBox(
+                height: 20.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      // 155 = 35 + 50 + 60 + 3
+                      width: (barChartAreaWidth - 158.0) * (mine / max) + 3.0,
+                      height: 13.0,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF8EACCD),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(8.0),
+                          bottomRight: Radius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10.0,
+                    ),
+                    SizedBox(
+                      width: 50.0,
+                      child: Text(
+                        formatCurrency(mine),
+                        style: const TextStyle(fontSize: 10.0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                height: 20.0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Container(
+                      // 155 = 35 + 50 + 60 + 3
+                      width: (barChartAreaWidth - 158.0) * (comp / max) + 3.0,
+                      height: 13.0,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFD9D9D9),
+                        borderRadius: BorderRadius.only(
+                          topRight: Radius.circular(8.0),
+                          bottomRight: Radius.circular(8.0),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(
+                      width: 10.0,
+                    ),
+                    SizedBox(
+                      width: 50.0,
+                      child: Text(
+                        formatCurrency(comp),
+                        style: const TextStyle(fontSize: 10.0),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
