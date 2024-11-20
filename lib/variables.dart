@@ -39,17 +39,32 @@ Map<String, String> categoryIconNameMap = {
   '기타': 'etc',
 };
 
-// Map<String, List<int>> categoryIconLocationMap = {
-//   '쇼핑': [0, 0],
-//   '이동': [0, 1],
-//   '식비': [0, 2],
-//   '의료': [0, 3],
-//   '생활': [1, 0],
-//   '여행': [1, 1],
-//   '주거': [1, 2],
-//   '선물': [1, 3],
-//   '자녀': [2, 0],
-//   '학습': [2, 1],
-//   '취미': [2, 2],
-//   '기타': [2, 3],
-// };
+Map<String, String> categoryToUpperMap = {
+  '쇼핑': 'SHOPPING',
+  '이동': 'TRANSPORTATION',
+  '식비': 'FOOD',
+  '의료': 'MEDICAL',
+  '생활': 'LIVING',
+  '여행': 'TRAVEL',
+  '주거': 'HOUSING',
+  '선물': 'FAMILY_EVENT_OR_PRESENT',
+  '자녀': 'CHILDREN',
+  '학습': 'LEARNING',
+  '취미': 'HOBBY',
+  '기타': 'ETC',
+};
+
+Map<String, String> upperToCategoryMap = {
+  'SHOPPING': '쇼핑',
+  'TRANSPORTATION': '이동',
+  'FOOD': '식비',
+  'MEDICAL': '의료',
+  'LIVING': '생활',
+  'TRAVEL': '여행',
+  'HOUSING': '주거',
+  'FAMILY_EVENT_OR_PRESENT': '선물',
+  'CHILDREN': '자녀',
+  'LEARNING': '학습',
+  'HOBBY': '취미',
+  'ETC': '기타',
+};

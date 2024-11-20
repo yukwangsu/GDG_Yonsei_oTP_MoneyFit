@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_financemanager/services/spending_service.dart';
+import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure_select_category.dart';
 import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
+import 'package:intl/intl.dart';
 
 class AddExpenditure extends StatefulWidget {
   const AddExpenditure({super.key});
@@ -31,10 +34,23 @@ class _AddExpenditureState extends State<AddExpenditure> {
   }
 
   // 확인 버튼을 눌렀을 때
-  void onClickConfirmButton() {
+  void onClickConfirmButton() async {
     if (selectedCategory.isNotEmpty && amountController.text.isNotEmpty) {
-      // 추후에 api 작업 추가
-      Navigator.of(context).pop();
+      // 현재 날짜 가져오기(한국 날짜)
+      DateTime nowInKorea =
+          DateTime.now().toUtc().add(const Duration(hours: 9));
+      // 날짜를 원하는 형식으로 포맷팅
+      String formattedDate = DateFormat('yyyy-MM-dd').format(nowInKorea);
+      // 지출 금액을 int 형식으로 변환
+      int amount = int.parse(amountController.text.split(',').join());
+
+      // 지출 추가하는 api사용
+      final addSpendingResult = await SpendingService.addSpending(
+        categoryToUpperMap[selectedCategory]!,
+        formattedDate,
+        amount,
+      );
+      Navigator.of(context).pop(addSpendingResult);
     }
   }
 

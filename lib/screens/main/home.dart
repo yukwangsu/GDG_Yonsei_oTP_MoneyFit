@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_financemanager/models/comparison_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
+import 'package:flutter_financemanager/services/spending_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure.dart';
 import 'package:flutter_financemanager/widgets/edit_comparison_category.dart';
@@ -27,6 +28,8 @@ class _HomeScreenState extends State<HomeScreen> {
   String comparisonTargetGender = '여성';
   // 비교 카테고리 리스트 기본값
   List<String> comparisonCategoryList = ['식비', '주거', '이동'];
+  // 최근 지출 저장
+  late Future<ExpenditureListModel> recentSpendingHistory;
 
   // // 추후 api사용 수정
   // late Future<List<PieModel>> pieChartList;
@@ -79,25 +82,13 @@ class _HomeScreenState extends State<HomeScreen> {
     max: 530000,
   );
 
-  // // 추후 api사용 수정
-  // late Future<List<ExpenditureModel>> pieChartList;
-  // api사용 전 임시 변수
-  List<ExpenditureModel> expenditureList = [
-    ExpenditureModel(
-        svgIcon: 'assets/icons/category_shopping_icon.svg',
-        category: '쇼핑',
-        date: '2024.11.12',
-        spend: 50000),
-    ExpenditureModel(
-        svgIcon: 'assets/icons/category_shopping_icon.svg',
-        category: '쇼핑',
-        date: '2024.11.12',
-        spend: 555555),
-  ];
-
   @override
   void initState() {
     super.initState();
+    // 최근 지출 불러오기
+    recentSpendingHistory = SpendingService.getSpending();
+
+    // 추후 삭제
     setPieChartColor(pieChartList);
     setPieChartCount(pieChartList);
   }
@@ -502,18 +493,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // 최근 지출 내역 리스트
                     Padding(
-                      padding: const EdgeInsets.only(
-                          left: 31.0, bottom: 8.0, right: 18.0),
-                      child: Column(
-                        children: [
-                          for (int i = 0; i < expenditureList.length; i++)
-                            expenditureListElement(expenditureList[i])
-                        ],
-                      ),
-                    ),
+                        padding: const EdgeInsets.only(
+                            left: 31.0, bottom: 8.0, right: 18.0),
+                        child: FutureBuilder(
+                          future: recentSpendingHistory,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              // 데이터가 로드 중일 때 로딩 표시
+                              return const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              // 오류가 발생했을 때
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              // 데이터를 성공적으로 가져왔을 때
+                              return Column(
+                                children: [
+                                  for (int i = 0;
+                                      i < snapshot.data!.expenditureList.length;
+                                      i++)
+                                    expenditureListElement(
+                                        snapshot.data!.expenditureList[i])
+                                ],
+                              );
+                            }
+                          },
+                        )),
                   ],
                 ),
               ),
+            ),
+            const SizedBox(
+              height: 27.0,
             ),
           ],
         ),
@@ -793,12 +811,22 @@ class _HomeScreenState extends State<HomeScreen> {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         if (text == '지출 추가하기') {
-          showDialog(
+          var addExpenditureResult = await showDialog(
             context: context,
             builder: (BuildContext context) {
               return const AddExpenditure();
             },
           );
+          if (addExpenditureResult != null && addExpenditureResult) {
+            // 지출을 추하했으므로 홈화면에 지출이 추가된 것을 반영
+            setState(() {
+              // 1. 최근 지출 내역 추가
+              recentSpendingHistory = SpendingService.getSpending();
+            });
+            // 2. 총 지출 내역 추가
+
+            // 3. 지출 비교 내역 수정?
+          }
         } else if (text == '카테고리 수정') {
           var selectedComparisonCategoryResult = await showDialog(
             context: context,
@@ -838,19 +866,32 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              SvgPicture.asset(model.svgIcon),
-              const SizedBox(
-                width: 17.0,
-              ),
-              Text(
-                model.category,
-                style: const TextStyle(
-                  fontSize: 13.0,
+          Container(
+            decoration: BoxDecoration(
+                color: const Color.fromARGB(255, 230, 230, 230),
+                borderRadius: BorderRadius.circular(7.0)),
+            padding: const EdgeInsets.only(
+                top: 3.0, right: 6.0, bottom: 3.0, left: 6.0),
+            child: Row(
+              children: [
+                // SvgPicture.asset(model.svgIcon),
+                Image.asset(
+                  'assets/images/select_category/${categoryIconNameMap[upperToCategoryMap[model.upperCategoryType]]}.png',
+                  width: 22.0,
+                  height: 22.0,
+                  fit: BoxFit.contain, // 이미지가 정사각형 영역에 비율을 유지하며 맞춰짐
                 ),
-              ),
-            ],
+                const SizedBox(
+                  width: 12.0,
+                ),
+                Text(
+                  upperToCategoryMap[model.upperCategoryType]!,
+                  style: const TextStyle(
+                    fontSize: 13.0,
+                  ),
+                ),
+              ],
+            ),
           ),
           Row(
             children: [
@@ -870,7 +911,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     Expanded(
                       child: Text(
-                        '-${formatCurrency(model.spend)}',
+                        '-${formatCurrency(model.expenseAmount)}',
                         overflow: TextOverflow.ellipsis, // 말 줄임표 추가
                         maxLines: 1, // 한 줄로 제한
                         softWrap: false, // 줄 바꿈 비활성화
