@@ -97,6 +97,8 @@ class SigninService {
 
     var body = jsonEncode(data);
 
+    print('google 로그인 성공');
+
     try {
       final response = await http.post(url, headers: headers, body: body);
       print('----------checkUser----------');

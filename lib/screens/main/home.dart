@@ -87,6 +87,10 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // 최근 지출 불러오기
     recentSpendingHistory = SpendingService.getSpending();
+    // 카테고리별 이번달 지출 불러오기
+
+    // 이번달 지출 불러오기
+    // SpendingService.getMonthlySpending();
 
     // 추후 삭제
     setPieChartColor(pieChartList);
@@ -766,7 +770,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Container(
-                      // 155 = 35 + 50 + 60 + 3
+                      // 158 = 35 + 50 + 60 + 3
                       width: (barChartAreaWidth - 158.0) * (comp / max) + 3.0,
                       height: 13.0,
                       decoration: const BoxDecoration(
@@ -896,7 +900,8 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             children: [
               Text(
-                model.date,
+                // yyyy-MM-ddTHH:mm:ss 중에 yyyy-MM-dd이 부분만 보이도록 설정
+                model.date.split('T')[0],
                 style: const TextStyle(
                   fontSize: 13.0,
                 ),

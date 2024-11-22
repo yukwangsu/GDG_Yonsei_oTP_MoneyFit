@@ -40,7 +40,9 @@ class _AddExpenditureState extends State<AddExpenditure> {
       DateTime nowInKorea =
           DateTime.now().toUtc().add(const Duration(hours: 9));
       // 날짜를 원하는 형식으로 포맷팅
-      String formattedDate = DateFormat('yyyy-MM-dd').format(nowInKorea);
+      String formattedDate =
+          DateFormat('yyyy-MM-ddTHH:mm:ss').format(nowInKorea);
+      // DateFormat('yyyy-MM-dd').format(nowInKorea);
       // 지출 금액을 int 형식으로 변환
       int amount = int.parse(amountController.text.split(',').join());
 
