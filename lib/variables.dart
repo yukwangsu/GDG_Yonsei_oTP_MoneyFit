@@ -120,3 +120,25 @@ List<Map<String, String>> badgeList = [
     'whiteImage': 'assets/images/badge/badge4_black.png',
   },
 ];
+
+// 요일(숫자) - 요일(문자)
+Map<int, String> dayText = {
+  1: '월',
+  2: '화',
+  3: '수',
+  4: '목',
+  5: '금',
+  6: '토',
+  7: '일',
+};
+
+// 요일(숫자) - point
+Map<int, int> attendanceReward = {
+  1: 40, // 월
+  2: 40, // 화
+  3: 80,
+  4: 80,
+  5: 120,
+  6: 160,
+  7: 200,
+};

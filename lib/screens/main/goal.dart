@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/services/goal_service.dart';
 import 'package:flutter_financemanager/variables.dart';
+import 'package:flutter_financemanager/widgets/add_goal.dart';
 import 'package:flutter_financemanager/widgets/badge_widget.dart';
 import 'package:flutter_financemanager/widgets/goal_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 class GoalScreen extends StatefulWidget {
   const GoalScreen({super.key});
@@ -13,6 +16,17 @@ class GoalScreen extends StatefulWidget {
 
 class _GoalScreenState extends State<GoalScreen> {
   bool showBadgeMore = false; // 업적 배지 더보기 저장 변수
+
+  @override
+  void initState() {
+    super.initState();
+
+    // 현재 날짜 가져오기(한국 날짜)
+    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
+    // 날짜를 원하는 형식으로 포맷팅
+    String formattedDate = DateFormat('yyyy-MM').format(nowInKorea);
+    // GoalService.getGoalService(formattedDate);
+  }
 
   // 업적 배지 더보기를 눌렀을 때
   void showBadgeMode() {
@@ -380,7 +394,22 @@ class _GoalScreenState extends State<GoalScreen> {
   Widget addGoalButton() {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onTap: () {},
+      onTap: () async {
+        var addGoalResult = await showDialog(
+          context: context,
+          builder: (BuildContext context) {
+            return const AddGoal();
+          },
+        );
+        if (addGoalResult != null && addGoalResult) {
+          // 목표를 추가했으므로 반영
+          print('목표 추가 성공!!!');
+          setState(() {
+            // 목표 불러오기
+            // recentSpendingHistory = SpendingService.getSpending();
+          });
+        }
+      },
       child: Row(
         children: [
           const Text(

@@ -11,6 +11,7 @@ import 'package:flutter_financemanager/widgets/edit_comparison_category.dart';
 import 'package:flutter_financemanager/widgets/list_border_line.dart';
 import 'package:flutter_financemanager/widgets/pie_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:intl/intl.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -85,12 +86,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    // 현재 날짜 가져오기(한국 날짜)
+    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
+    // 날짜를 원하는 형식으로 포맷팅
+    String year = DateFormat('yyyy').format(nowInKorea);
+    String month = DateFormat('MM').format(nowInKorea);
+
     // 최근 지출 불러오기
     recentSpendingHistory = SpendingService.getSpending();
     // 카테고리별 이번달 지출 불러오기
-    SpendingService.getCategoryMonthlySpending();
+    SpendingService.getCategoryMonthlySpending(year, month);
     // 이번달 지출 불러오기
-    SpendingService.getMonthlySpending();
+    SpendingService.getMonthlySpending(year, month);
 
     // 추후 삭제
     setPieChartColor(pieChartList);
@@ -109,7 +116,6 @@ class _HomeScreenState extends State<HomeScreen> {
         result.write(',');
       }
     }
-
     return result.toString().split('').reversed.join();
   }
 

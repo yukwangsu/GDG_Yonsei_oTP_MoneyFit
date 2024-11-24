@@ -94,9 +94,12 @@ class SpendingService {
   }
 
   // 카테고리별 이번달 총 소비 금액
-  static Future<bool> getCategoryMonthlySpending() async {
-    final url =
-        Uri.parse('$uri/android/spending/category-monthly-summary/2024/11');
+  static Future<bool> getCategoryMonthlySpending(
+    String year,
+    String month,
+  ) async {
+    final url = Uri.parse(
+        '$uri/android/spending/category-monthly-summary/$year/$month');
 
     // token 가져오기
     final prefs = await SharedPreferences.getInstance();
@@ -134,8 +137,11 @@ class SpendingService {
   }
 
   // 이번달 총 소비 금액, 저번달에 비해 절약한 금액
-  static Future<bool> getMonthlySpending() async {
-    final url = Uri.parse('$uri/android/spending/monthly-expense/2024/11');
+  static Future<bool> getMonthlySpending(
+    String year,
+    String month,
+  ) async {
+    final url = Uri.parse('$uri/android/spending/monthly-expense/$year/$month');
 
     // token 가져오기
     final prefs = await SharedPreferences.getInstance();
