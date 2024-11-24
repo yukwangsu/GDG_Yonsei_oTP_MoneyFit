@@ -93,9 +93,49 @@ class SpendingService {
     }
   }
 
-  //이번달 총 소비 금액, 저번달에 비해 절약한 금액
+  // 카테고리별 이번달 총 소비 금액
+  static Future<bool> getCategoryMonthlySpending() async {
+    final url =
+        Uri.parse('$uri/android/spending/category-monthly-summary/2024/11');
+
+    // token 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('moneyfitAccessToken');
+
+    print('*****token: $token*****');
+
+    var headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.get(url, headers: headers);
+      print('----------getCategoryMonthlySpending----------');
+      print('Response status: ${response.statusCode}');
+
+      // UTF-8로 응답을 수동 디코딩
+      final utf8Body = utf8.decode(response.bodyBytes);
+      print('Response body: $utf8Body');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('getCategoryMonthlySpending 성공');
+        final responseData = json.decode(utf8Body);
+        return true;
+      } else {
+        print('getCategoryMonthlySpending 실패');
+        print(response.body);
+        throw Error();
+      }
+    } catch (e) {
+      print('Error during getCategoryMonthlySpending: $e');
+      throw Error();
+    }
+  }
+
+  // 이번달 총 소비 금액, 저번달에 비해 절약한 금액
   static Future<bool> getMonthlySpending() async {
-    final url = Uri.parse('$uri/android/spending/total-expense/2024/11');
+    final url = Uri.parse('$uri/android/spending/monthly-expense/2024/11');
 
     // token 가져오기
     final prefs = await SharedPreferences.getInstance();

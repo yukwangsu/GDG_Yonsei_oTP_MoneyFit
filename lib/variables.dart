@@ -68,3 +68,55 @@ Map<String, String> upperToCategoryMap = {
   'HOBBY': '취미',
   'ETC': '기타',
 };
+
+// 업적 배지
+List<Map<String, String>> badgeList = [
+  {
+    'title': '배지 1',
+    'description': '회원가입 완료!',
+    'image': 'assets/images/badge/badge1_color.png',
+    'whiteImage': 'assets/images/badge/badge1_color.png',
+  },
+  {
+    'title': '배지 2',
+    'description': '친구 3명에게 공유하기 완료!',
+    'image': 'assets/images/badge/badge2_color.png',
+    'whiteImage': 'assets/images/badge/badge2_color.png',
+  },
+  {
+    'title': '배지 3',
+    'description': '첫 목표 추가 완료!',
+    'image': 'assets/images/badge/badge3_color.png',
+    'whiteImage': 'assets/images/badge/badge3_color.png',
+  },
+  {
+    'title': '배지 4',
+    'description': '첫 목표 달성 완료!',
+    'image': 'assets/images/badge/badge4_black.png',
+    'whiteImage': 'assets/images/badge/badge4_black.png',
+  },
+  {
+    'title': '배지 5',
+    'description': '첫 뽑기 시도 완료!',
+    'image': 'assets/images/badge/badge4_black.png',
+    'whiteImage': 'assets/images/badge/badge4_black.png',
+  },
+  {
+    'title': '배지 6',
+    'description': '첫 뽑기 성공 완료!',
+    'image': 'assets/images/badge/badge4_black.png',
+    'whiteImage': 'assets/images/badge/badge4_black.png',
+  },
+  {
+    'title': '배지 7',
+    'description': '11월 목표 달성 완료!',
+    'image': 'assets/images/badge/badge4_black.png',
+    'whiteImage': 'assets/images/badge/badge4_black.png',
+  },
+  {
+    'title': '배지 8',
+    'description': '2개월 연속 목표 달성 완료!',
+    'image': 'assets/images/badge/badge4_black.png',
+    'whiteImage': 'assets/images/badge/badge4_black.png',
+  },
+];

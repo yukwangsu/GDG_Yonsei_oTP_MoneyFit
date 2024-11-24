@@ -88,9 +88,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // 최근 지출 불러오기
     recentSpendingHistory = SpendingService.getSpending();
     // 카테고리별 이번달 지출 불러오기
-
+    SpendingService.getCategoryMonthlySpending();
     // 이번달 지출 불러오기
-    // SpendingService.getMonthlySpending();
+    SpendingService.getMonthlySpending();
 
     // 추후 삭제
     setPieChartColor(pieChartList);
@@ -205,11 +205,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const Text(
                                     '총 지출',
                                     style: TextStyle(
-                                        fontSize: 12.0,
+                                        fontSize: 14.0,
                                         fontWeight: FontWeight.bold),
                                   ),
                                   const SizedBox(
-                                    height: 7.0,
+                                    height: 5.0,
                                   ),
                                   Row(
                                     children: [
@@ -484,7 +484,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           const Text(
                             '최근 지출',
                             style: TextStyle(
-                              fontSize: 12.0,
+                              fontSize: 14.0,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
