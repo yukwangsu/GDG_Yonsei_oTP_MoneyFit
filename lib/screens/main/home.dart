@@ -42,57 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   // 이번달과 저번달의 지출 차이
   int expenseDifferenceThisAndLastMonth = 0;
 
-  // // 추후 api사용 수정
-  // late Future<List<PieModel>> pieChartList;
-  // api사용 전 임시 변수
-  List<PieModel> pieChartList = [
-    PieModel(count: 12, color: Colors.red, content: '생활', spend: 300000),
-    PieModel(count: 18, color: Colors.blue, content: '교통', spend: 200000),
-    PieModel(count: 23, color: Colors.grey, content: '의료', spend: 100000),
-    PieModel(count: 31, color: Colors.amber, content: '교육', spend: 70000),
-    PieModel(count: 6, color: Colors.green, content: '기타', spend: 50000),
-    PieModel(count: 4, color: Colors.cyan, content: '식비', spend: 50000),
-    PieModel(count: 6, color: Colors.purple, content: '기타2', spend: 9000),
-  ];
-
-  // // 추후 api사용 수정
-  // late Future<ComparisonModel> comparisonAverage;
-  // api사용 전 임시 변수
-  ComparisonModel comparisonAverage = ComparisonModel(
-    averageSpendMap: {
-      '쇼핑': 300000,
-      '이동': 80000,
-      '식비': 600000,
-      '의료': 40000,
-      '생활': 300000,
-      '여행': 50000,
-      '주거': 500000,
-      '선물': 100000,
-      '자녀': 0,
-      '학습': 30000,
-      '취미': 100000,
-      '기타': 40000,
-    },
-    max: 600000,
-  );
-  ComparisonModel mySpend = ComparisonModel(
-    averageSpendMap: {
-      '쇼핑': 200000,
-      '이동': 40000,
-      '식비': 400000,
-      '의료': 6000,
-      '생활': 100000,
-      '여행': 60000,
-      '주거': 530000,
-      '선물': 30000,
-      '자녀': 0,
-      '학습': 20000,
-      '취미': 10000,
-      '기타': 70000,
-    },
-    max: 530000,
-  );
-
   @override
   void initState() {
     super.initState();
@@ -106,11 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // 최근 지출 불러오기
     recentSpendingHistory = SpendingService.getSpending();
 
-    // 지출 비교 카테고리 가져오기
+    // 지출 비교 카테고리, 나이, 성별 가져오기
     _initPrefs();
-
-    // 추후 삭제
-    // setPieChartCount(pieChartList);
   }
 
   String formatCurrency(int amount) {
@@ -170,8 +116,9 @@ class _HomeScreenState extends State<HomeScreen> {
   // 비교할 카테고리 가져오기
   void _initPrefs() async {
     final prefs = await SharedPreferences.getInstance();
-    final prefsResult = prefs.getStringList('comparisonCategoryList');
-    if (prefsResult == null) {
+    // 카테고리
+    final prefsCategoryResult = prefs.getStringList('comparisonCategoryList');
+    if (prefsCategoryResult == null) {
       setState(() {
         prefs.setStringList('comparisonCategoryList', ['식비', '주거', '이동']);
         comparisonCategoryList = ['식비', '주거', '이동'];
@@ -181,15 +128,69 @@ class _HomeScreenState extends State<HomeScreen> {
         comparisonCategoryList = prefs.getStringList('comparisonCategoryList')!;
       });
     }
+    // 나이
+    final prefsAgeResult = prefs.getString('comparisonTargetAge');
+    if (prefsAgeResult == null) {
+      setState(() {
+        prefs.setString('comparisonTargetAge', '20대');
+        comparisonTargetAge = '20대';
+      });
+    } else {
+      setState(() {
+        comparisonTargetAge = prefs.getString('comparisonTargetAge')!;
+      });
+    }
+    // 성별
+    final prefsGenderResult = prefs.getString('comparisonTargetGender');
+    if (prefsGenderResult == null) {
+      setState(() {
+        prefs.setString('comparisonTargetGender', '여성');
+        comparisonTargetGender = '여성';
+      });
+    } else {
+      setState(() {
+        comparisonTargetGender = prefs.getString('comparisonTargetGender')!;
+      });
+    }
   }
 
   // 비교할 카테고리 수정하기
-  void _editPrefs(List<String> selectedCategory) async {
+  void _editCategoryPrefs(List<String> selectedCategory) async {
     final prefs = await SharedPreferences.getInstance();
     setState(() {
       prefs.setStringList('comparisonCategoryList', selectedCategory);
       comparisonCategoryList = selectedCategory;
     });
+  }
+
+  // 비교할 나이 수정하기
+  void _editAgePrefs(String selectedAge) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString('comparisonTargetAge', selectedAge);
+      comparisonTargetAge = selectedAge;
+    });
+  }
+
+  // 비교할 성별 수정하기
+  void _editGenderPrefs(String selectedGender) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setString('comparisonTargetGender', selectedGender);
+      comparisonTargetGender = selectedGender;
+    });
+  }
+
+  int setAgeRange(String age) {
+    if (age == '10대' || age == '20대' || age == '30대') {
+      return 30;
+    } else if (age == '40대') {
+      return 40;
+    } else if (age == '50대') {
+      return 50;
+    } else {
+      return 60;
+    }
   }
 
   List<int> setPieChartCount(List<CategoryExpenditureModel> list) {
@@ -545,7 +546,6 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,
                               child:
-
                                   // 새로운 코드
                                   FutureBuilder(
                                 future: monthlyCategoryExpenditure,
@@ -600,6 +600,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         }));
                                       }
                                     }
+                                    final int selectedAgeRange =
+                                        setAgeRange(comparisonTargetAge);
                                     return Column(
                                       children: [
                                         for (int i = 0;
@@ -621,12 +623,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 monthlyCategoryExpenditureList[
                                                         i]
                                                     .totalExpense,
-                                                200000,
+                                                spendingByAgeCategory[
+                                                        selectedAgeRange]![
+                                                    monthlyCategoryExpenditureList[
+                                                            i]
+                                                        .category]!,
                                                 max(
                                                     monthlyCategoryExpenditureList[
                                                             0]
                                                         .totalExpense,
-                                                    200000)),
+                                                    spendingByAgeCategory[
+                                                            selectedAgeRange]![
+                                                        'MAX']!)),
                                             const SizedBox(
                                               height: 20.0,
                                             )
@@ -758,13 +766,13 @@ class _HomeScreenState extends State<HomeScreen> {
             padding: const EdgeInsets.only(right: 10.0),
             child: Text(
               upperToCategoryMap[model.category]!,
-              style: const TextStyle(fontSize: 11.0),
+              style: const TextStyle(fontSize: 12.0),
             ),
           ),
           // 금액
           Text(
             '${formatCurrency(model.totalExpense)} 원',
-            style: const TextStyle(fontSize: 11.0),
+            style: const TextStyle(fontSize: 12.0),
           ),
         ],
       ),
@@ -910,6 +918,7 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           SizedBox(
             width: 35.0,
+            // 카테고리
             child: Text(
               name,
               style: const TextStyle(fontSize: 12.0),
@@ -924,7 +933,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     Container(
-                      // 155 = 35 + 50 + 60 + 3
+                      // 158 = 35 + 50 + 60 + 3
                       width: (barChartAreaWidth - 158.0) * (mine / max) + 3.0,
                       height: 13.0,
                       decoration: const BoxDecoration(
@@ -938,6 +947,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(
                       width: 10.0,
                     ),
+                    // 금액
                     SizedBox(
                       width: 50.0,
                       child: Row(
@@ -948,7 +958,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis, // 말 줄임표 추가
                               maxLines: 1, // 한 줄로 제한
                               softWrap: false, // 줄 바꿈 비활성화
-                              style: const TextStyle(fontSize: 10.0),
+                              style: const TextStyle(fontSize: 11.0),
                             ),
                           ),
                         ],
@@ -987,7 +997,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               overflow: TextOverflow.ellipsis, // 말 줄임표 추가
                               maxLines: 1, // 한 줄로 제한
                               softWrap: false, // 줄 바꿈 비활성화
-                              style: const TextStyle(fontSize: 10.0),
+                              style: const TextStyle(fontSize: 11.0),
                             ),
                           ),
                         ],
@@ -1038,7 +1048,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
           if (selectedComparisonCategoryResult != null) {
-            _editPrefs(selectedComparisonCategoryResult);
+            _editCategoryPrefs(selectedComparisonCategoryResult);
           }
         }
       },
@@ -1144,6 +1154,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // 나이 선택 리스트
   Widget comparisonTargetAgeList(BuildContext context, String listContent) {
     return ListTile(
       contentPadding: EdgeInsets.zero, // default Padding을 0으로 설정
@@ -1155,10 +1166,9 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.w400,
         ),
       ),
+      // 비교할 나이를 선택했을 때
       onTap: () {
-        setState(() {
-          comparisonTargetAge = listContent;
-        });
+        _editAgePrefs(listContent);
         Navigator.pop(context);
       },
     );
@@ -1175,10 +1185,9 @@ class _HomeScreenState extends State<HomeScreen> {
           fontWeight: FontWeight.w400,
         ),
       ),
+      // 비교할 성별을 선택했을 때
       onTap: () {
-        setState(() {
-          comparisonTargetGender = listContent;
-        });
+        _editGenderPrefs(listContent);
         Navigator.pop(context);
       },
     );
@@ -1203,7 +1212,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text(
               '나',
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: 11.0,
                 height: 1.2,
               ),
             ),
@@ -1227,7 +1236,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const Text(
               '평균',
               style: TextStyle(
-                fontSize: 10.0,
+                fontSize: 11.0,
                 height: 1.2,
               ),
             ),
