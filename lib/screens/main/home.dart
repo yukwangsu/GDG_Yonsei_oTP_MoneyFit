@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/models/category_expenditure.dart';
 import 'package:flutter_financemanager/models/comparison_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
@@ -12,6 +13,7 @@ import 'package:flutter_financemanager/widgets/list_border_line.dart';
 import 'package:flutter_financemanager/widgets/pie_chart.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -28,9 +30,17 @@ class _HomeScreenState extends State<HomeScreen> {
   // 비교 성별 기본값
   String comparisonTargetGender = '여성';
   // 비교 카테고리 리스트 기본값
-  List<String> comparisonCategoryList = ['식비', '주거', '이동'];
+  List<String> comparisonCategoryList = [];
   // 최근 지출 저장
   late Future<ExpenditureListModel> recentSpendingHistory;
+  // 이번달 카테고리 별 지출 총합 저장
+  late Future<CategoryExpenditureListModel> monthlyCategoryExpenditure;
+  // 이번달 지출 저장
+  int thisMonthTotalSpending = -1;
+  // 저번달 지출 저장
+  int lastMonthTotalSpending = -1;
+  // 이번달과 저번달의 지출 차이
+  int expenseDifferenceThisAndLastMonth = 0;
 
   // // 추후 api사용 수정
   // late Future<List<PieModel>> pieChartList;
@@ -86,22 +96,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // 현재 날짜 가져오기(한국 날짜)
-    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
-    // 날짜를 원하는 형식으로 포맷팅
-    String year = DateFormat('yyyy').format(nowInKorea);
-    String month = DateFormat('MM').format(nowInKorea);
+
+    // 이번달, 저번달 지출 불러오기
+    _getMonthlySpending();
+
+    // 카테고리별 이번달 지출 불러오기
+    _getCategoryMonthlySpending();
 
     // 최근 지출 불러오기
     recentSpendingHistory = SpendingService.getSpending();
-    // 카테고리별 이번달 지출 불러오기
-    SpendingService.getCategoryMonthlySpending(year, month);
-    // 이번달 지출 불러오기
-    SpendingService.getMonthlySpending(year, month);
+
+    // 지출 비교 카테고리 가져오기
+    _initPrefs();
 
     // 추후 삭제
-    setPieChartColor(pieChartList);
-    setPieChartCount(pieChartList);
+    // setPieChartCount(pieChartList);
   }
 
   String formatCurrency(int amount) {
@@ -119,37 +128,93 @@ class _HomeScreenState extends State<HomeScreen> {
     return result.toString().split('').reversed.join();
   }
 
-  // void setPieChartColor(List<PieModel> list) {
-  //   for (int i = 0; i < list.length; i++) {
-  //     list[i].color = pieChartColorList[i % pieChartColorList.length];
-  //   }
-  // }
+  // 이번달, 저번달 지출 불러오는 함수
+  void _getMonthlySpending() async {
+    // 현재 날짜 가져오기(한국 날짜)
+    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
+    // 날짜를 원하는 형식으로 포맷팅
+    String year = DateFormat('yyyy').format(nowInKorea);
+    String month = DateFormat('MM').format(nowInKorea);
+    // 저번 달 계산
+    DateTime lastMonthInKorea = DateTime(nowInKorea.year, nowInKorea.month - 1);
+    // 저번 달을 원하는 형식으로 포맷팅
+    String lastMonthYear = DateFormat('yyyy').format(lastMonthInKorea);
+    String lastMonth = DateFormat('MM').format(lastMonthInKorea);
 
-  void setPieChartColor(List<PieModel> list) {
-    for (int i = 0; i < list.length; i++) {
-      if (i < 4) {
-        list[i].color = pieChartColorList[i];
-      } else {
-        list[i].color = pieChartColorList[pieChartColorList.length - 1];
-      }
+    double thisMonthTotalSpendingTemp =
+        await SpendingService.getMonthlySpending(year, month);
+    double lastMonthTotalSpendingTemp =
+        await SpendingService.getMonthlySpending(lastMonthYear, lastMonth);
+    setState(() {
+      thisMonthTotalSpending = thisMonthTotalSpendingTemp.toInt();
+      lastMonthTotalSpending = lastMonthTotalSpendingTemp.toInt();
+      expenseDifferenceThisAndLastMonth =
+          lastMonthTotalSpending - thisMonthTotalSpending;
+    });
+  }
+
+  // 이번달 카테고리 별 지출 불러오는 함수
+  void _getCategoryMonthlySpending() {
+    // 현재 날짜 가져오기(한국 날짜)
+    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
+    // 날짜를 원하는 형식으로 포맷팅
+    String year = DateFormat('yyyy').format(nowInKorea);
+    String month = DateFormat('MM').format(nowInKorea);
+
+    setState(() {
+      monthlyCategoryExpenditure =
+          SpendingService.getCategoryMonthlySpending(year, month);
+    });
+  }
+
+  // 비교할 카테고리 가져오기
+  void _initPrefs() async {
+    final prefs = await SharedPreferences.getInstance();
+    final prefsResult = prefs.getStringList('comparisonCategoryList');
+    if (prefsResult == null) {
+      setState(() {
+        prefs.setStringList('comparisonCategoryList', ['식비', '주거', '이동']);
+        comparisonCategoryList = ['식비', '주거', '이동'];
+      });
+    } else {
+      setState(() {
+        comparisonCategoryList = prefs.getStringList('comparisonCategoryList')!;
+      });
     }
   }
 
-  void setPieChartCount(List<PieModel> list) {
+  // 비교할 카테고리 수정하기
+  void _editPrefs(List<String> selectedCategory) async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      prefs.setStringList('comparisonCategoryList', selectedCategory);
+      comparisonCategoryList = selectedCategory;
+    });
+  }
+
+  List<int> setPieChartCount(List<CategoryExpenditureModel> list) {
     int spendSum = 0;
     int countSum = 0;
+    List<int> countList = [];
     for (int i = 0; i < list.length; i++) {
-      spendSum += list[i].spend;
-    }
-    for (int i = 0; i < list.length; i++) {
-      list[i].count = (list[i].spend / spendSum * 100).floor();
+      spendSum += list[i].totalExpense;
     }
     for (int i = 0; i < list.length; i++) {
-      countSum += list[i].count;
+      countList.add((list[i].totalExpense / spendSum * 100).floor());
     }
-    if (countSum < 100) {
-      list[0].count += 100 - countSum;
+    for (int i = 0; i < countList.length; i++) {
+      countSum += countList[i];
     }
+    if (countList.isEmpty) {
+      // 지출이 없을 경우 default값 하나를 넣어줌
+      countList.add(100);
+    } else {
+      if (countSum < 100) {
+        // 지출이 있는데 countList의 합이 100이 아닌 경우
+        countList[0] += 100 - countSum;
+      }
+    }
+    return countList;
   }
 
   @override
@@ -179,6 +244,7 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(
               height: 27.0,
             ),
+
             // 1. Home 화면 내용 - 총 지출
             Padding(
               padding: const EdgeInsets.only(right: 11.0, left: 20.0),
@@ -223,7 +289,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                         padding:
                                             const EdgeInsets.only(top: 3.0),
                                         child: Text(
-                                          formatCurrency(1253500),
+                                          thisMonthTotalSpending < 0
+                                              ? ''
+                                              : formatCurrency(
+                                                  thisMonthTotalSpending),
                                           style: const TextStyle(
                                               fontSize: 20.0,
                                               fontWeight: FontWeight.bold),
@@ -245,63 +314,104 @@ class _HomeScreenState extends State<HomeScreen> {
                             // 차트, legend
                             SizedBox(
                               height: 123.0,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // 파이 차트
-                                  Padding(
-                                    padding: const EdgeInsets.only(left: 36.0),
-                                    child: Stack(
-                                      alignment: Alignment.center,
+                              child: FutureBuilder(
+                                future: monthlyCategoryExpenditure,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    // 데이터가 로드 중일 때 로딩 표시
+                                    return const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        // 파이 차트
-                                        SizedBox(
-                                          width: 123.0,
-                                          child: PieChart(
-                                            pieChartList: pieChartList,
-                                          ),
-                                        ),
-                                        // 차트 가운데를 채우는 원
-                                        Container(
-                                          width:
-                                              61.0, // Set the diameter of the circle
-                                          height:
-                                              61.0, // Same as width to make it a circle
-                                          decoration: const BoxDecoration(
-                                            color: Color(
-                                                0xFFF2F4F7), // Set the color of the circle
-                                            shape: BoxShape.circle,
-                                          ),
+                                        CircularProgressIndicator(
+                                          color: Colors.white,
                                         ),
                                       ],
-                                    ),
-                                  ),
-                                  const SizedBox(
-                                    width: 40.0,
-                                  ),
-                                  // 파이 차트 legend
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      // pieChartList의 개수가 최대 legend 개수보다 많을 경우
-                                      if (pieChartList.length >
-                                          _maxLegendTotalExpenditure)
-                                        for (int i = 0;
-                                            i < _maxLegendTotalExpenditure;
-                                            i++)
-                                          totalExpenditureLegend(
-                                              pieChartList[i])
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    // 오류가 발생했을 때
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    // 데이터를 성공적으로 가져왔을 때
+                                    return Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        // 파이 차트
+                                        Padding(
+                                          padding:
+                                              const EdgeInsets.only(left: 36.0),
+                                          child: Stack(
+                                            alignment: Alignment.center,
+                                            children: [
+                                              // 파이 차트
+                                              SizedBox(
+                                                width: 123.0,
+                                                child: PieChart(
+                                                  pieChartCountList:
+                                                      setPieChartCount(snapshot
+                                                          .data!
+                                                          .monthlyCategoryExpenditureList),
+                                                ),
+                                              ),
+                                              // 차트 가운데를 채우는 원
+                                              Container(
+                                                width:
+                                                    61.0, // Set the diameter of the circle
+                                                height:
+                                                    61.0, // Same as width to make it a circle
+                                                decoration: const BoxDecoration(
+                                                  color: Color(
+                                                      0xFFF2F4F7), // Set the color of the circle
+                                                  shape: BoxShape.circle,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                        const SizedBox(
+                                          width: 40.0,
+                                        ),
+                                        // 파이 차트 legend
+                                        Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            // monthlyCategoryExpenditureList 길이가 최대 legend 개수보다 많을 경우
+                                            if (snapshot
+                                                    .data!
+                                                    .monthlyCategoryExpenditureList
+                                                    .length >
+                                                _maxLegendTotalExpenditure)
+                                              for (int i = 0;
+                                                  i <
+                                                      _maxLegendTotalExpenditure;
+                                                  i++)
+                                                totalExpenditureLegend(
+                                                    snapshot.data!
+                                                        .monthlyCategoryExpenditureList[i],
+                                                    pieChartColorList[i])
 
-                                      // pieChartList의 개수가 최대 legend 개수보다 적을 경우
-                                      else
-                                        for (int i = 0;
-                                            i < pieChartList.length;
-                                            i++)
-                                          totalExpenditureLegend(
-                                              pieChartList[i])
-                                    ],
-                                  )
-                                ],
+                                            // monthlyCategoryExpenditureList 길이가 최대 legend 개수보다 적을 경우
+                                            else
+                                              for (int i = 0;
+                                                  i <
+                                                      snapshot
+                                                          .data!
+                                                          .monthlyCategoryExpenditureList
+                                                          .length;
+                                                  i++)
+                                                totalExpenditureLegend(
+                                                    snapshot.data!
+                                                        .monthlyCategoryExpenditureList[i],
+                                                    pieChartColorList[i])
+                                          ],
+                                        )
+                                      ],
+                                    );
+                                  }
+                                },
                               ),
                             )
                           ],
@@ -347,19 +457,22 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     // 절약한 금액
                                     Text(
-                                      '${formatCurrency(100000)} 원 ',
+                                      thisMonthTotalSpending < 0
+                                          ? ''
+                                          : (expenseDifferenceThisAndLastMonth) <
+                                                  0
+                                              ? '${formatCurrency((expenseDifferenceThisAndLastMonth) * -1)} 원 '
+                                              : '${formatCurrency(expenseDifferenceThisAndLastMonth)} 원 ',
                                       style: const TextStyle(
                                           fontSize: 13.0,
                                           fontWeight: FontWeight.bold),
                                     ),
-                                    const Text(
-                                      '절약하셨네요 ',
-                                      style: TextStyle(fontSize: 11.0),
-                                    ),
-                                    // 이모지
-                                    const Text(
-                                      '\u{1F389}',
-                                      style: TextStyle(fontSize: 11.0),
+
+                                    Text(
+                                      (expenseDifferenceThisAndLastMonth) > 0
+                                          ? '절약 중입니다 \u{1F389}'
+                                          : '더 지출 중입니다',
+                                      style: const TextStyle(fontSize: 11.0),
                                     ),
                                   ],
                                 ),
@@ -431,24 +544,97 @@ class _HomeScreenState extends State<HomeScreen> {
                             height: 160.0,
                             child: SingleChildScrollView(
                               scrollDirection: Axis.vertical,
-                              child: Column(
-                                children: [
-                                  for (int i = 0;
-                                      i < comparisonCategoryList.length;
-                                      i++) ...[
-                                    barChart(
-                                      comparisonCategoryList[i],
-                                      mySpend.averageSpendMap[
-                                          comparisonCategoryList[i]]!,
-                                      comparisonAverage.averageSpendMap[
-                                          comparisonCategoryList[i]]!,
-                                      max(comparisonAverage.max, mySpend.max),
-                                    ),
-                                    const SizedBox(
-                                      height: 20.0,
-                                    )
-                                  ]
-                                ],
+                              child:
+
+                                  // 새로운 코드
+                                  FutureBuilder(
+                                future: monthlyCategoryExpenditure,
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    // 데이터가 로드 중일 때 로딩 표시
+                                    return const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        CircularProgressIndicator(
+                                          color: Colors.white,
+                                        ),
+                                      ],
+                                    );
+                                  } else if (snapshot.hasError) {
+                                    // 오류가 발생했을 때
+                                    return Text('Error: ${snapshot.error}');
+                                  } else {
+                                    // // 데이터를 성공적으로 가져왔을 때
+                                    // 가져온 데이터 따로 저장
+                                    List<CategoryExpenditureModel>
+                                        monthlyCategoryExpenditureList =
+                                        snapshot.data!
+                                            .monthlyCategoryExpenditureList;
+                                    // 가져온 데이터의 카테고리 따로 저장
+                                    final List<String> snapshotCategoryList =
+                                        [];
+                                    for (int i = 0;
+                                        i <
+                                            monthlyCategoryExpenditureList
+                                                .length;
+                                        i++) {
+                                      snapshotCategoryList.add(
+                                          monthlyCategoryExpenditureList[i]
+                                              .category);
+                                    }
+                                    // 만약 특정 카테고리에 소비하지 않아서 가져온 데이터에 해당 카테고리가 없는 경우
+                                    // 지출금액을 0으로 설정해서 추가해준다.
+                                    for (int i = 0;
+                                        i < categoryList.length;
+                                        i++) {
+                                      if (!snapshotCategoryList.contains(
+                                          categoryToUpperMap[
+                                              categoryList[i]])) {
+                                        monthlyCategoryExpenditureList.add(
+                                            CategoryExpenditureModel.fromJson({
+                                          "totalExpense": 0,
+                                          "category": categoryToUpperMap[
+                                              categoryList[i]]
+                                        }));
+                                      }
+                                    }
+                                    return Column(
+                                      children: [
+                                        for (int i = 0;
+                                            i <
+                                                monthlyCategoryExpenditureList
+                                                    .length;
+                                            i++)
+                                          // 사용자가 설정한 카테고리에 해당하는지 확인
+                                          if (comparisonCategoryList.contains(
+                                              upperToCategoryMap[
+                                                  monthlyCategoryExpenditureList[
+                                                          i]
+                                                      .category])) ...[
+                                            barChart(
+                                                upperToCategoryMap[
+                                                    monthlyCategoryExpenditureList[
+                                                            i]
+                                                        .category]!,
+                                                monthlyCategoryExpenditureList[
+                                                        i]
+                                                    .totalExpense,
+                                                200000,
+                                                max(
+                                                    monthlyCategoryExpenditureList[
+                                                            0]
+                                                        .totalExpense,
+                                                    200000)),
+                                            const SizedBox(
+                                              height: 20.0,
+                                            )
+                                          ]
+                                      ],
+                                    );
+                                  }
+                                },
                               ),
                             ),
                           ),
@@ -503,39 +689,40 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     // 최근 지출 내역 리스트
                     Padding(
-                        padding: const EdgeInsets.only(
-                            left: 31.0, bottom: 8.0, right: 18.0),
-                        child: FutureBuilder(
-                          future: recentSpendingHistory,
-                          builder: (context, snapshot) {
-                            if (snapshot.connectionState ==
-                                ConnectionState.waiting) {
-                              // 데이터가 로드 중일 때 로딩 표시
-                              return const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  CircularProgressIndicator(
-                                    color: Colors.white,
-                                  ),
-                                ],
-                              );
-                            } else if (snapshot.hasError) {
-                              // 오류가 발생했을 때
-                              return Text('Error: ${snapshot.error}');
-                            } else {
-                              // 데이터를 성공적으로 가져왔을 때
-                              return Column(
-                                children: [
-                                  for (int i = 0;
-                                      i < snapshot.data!.expenditureList.length;
-                                      i++)
-                                    expenditureListElement(
-                                        snapshot.data!.expenditureList[i])
-                                ],
-                              );
-                            }
-                          },
-                        )),
+                      padding: const EdgeInsets.only(
+                          left: 31.0, bottom: 8.0, right: 18.0),
+                      child: FutureBuilder(
+                        future: recentSpendingHistory,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // 데이터가 로드 중일 때 로딩 표시
+                            return const Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: Colors.white,
+                                ),
+                              ],
+                            );
+                          } else if (snapshot.hasError) {
+                            // 오류가 발생했을 때
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // 데이터를 성공적으로 가져왔을 때
+                            return Column(
+                              children: [
+                                for (int i = 0;
+                                    i < snapshot.data!.expenditureList.length;
+                                    i++)
+                                  expenditureListElement(
+                                      snapshot.data!.expenditureList[i])
+                              ],
+                            );
+                          }
+                        },
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -549,7 +736,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget totalExpenditureLegend(PieModel model) {
+  Widget totalExpenditureLegend(CategoryExpenditureModel model, Color color) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
@@ -561,7 +748,7 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 12.0,
               height: 12.0,
               decoration: BoxDecoration(
-                color: model.color,
+                color: color,
                 borderRadius: BorderRadius.circular(3.0),
               ),
             ),
@@ -570,13 +757,13 @@ class _HomeScreenState extends State<HomeScreen> {
           Padding(
             padding: const EdgeInsets.only(right: 10.0),
             child: Text(
-              model.content,
+              upperToCategoryMap[model.category]!,
               style: const TextStyle(fontSize: 11.0),
             ),
           ),
           // 금액
           Text(
-            '${formatCurrency(model.spend)} 원',
+            '${formatCurrency(model.totalExpense)} 원',
             style: const TextStyle(fontSize: 11.0),
           ),
         ],
@@ -828,12 +1015,16 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
           if (addExpenditureResult != null && addExpenditureResult) {
-            // 지출을 추하했으므로 홈화면에 지출이 추가된 것을 반영
+            // 지출을 추가했으므로 홈화면에 지출이 추가된 것을 반영
             setState(() {
               // 1. 최근 지출 내역 추가
               recentSpendingHistory = SpendingService.getSpending();
             });
             // 2. 총 지출 내역 추가
+            _getMonthlySpending();
+
+            // 3. 카테고리별 지출 수정
+            _getCategoryMonthlySpending();
 
             // 3. 지출 비교 내역 수정?
           }
@@ -847,9 +1038,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           );
           if (selectedComparisonCategoryResult != null) {
-            setState(() {
-              comparisonCategoryList = selectedComparisonCategoryResult;
-            });
+            _editPrefs(selectedComparisonCategoryResult);
           }
         }
       },
@@ -870,53 +1059,61 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // 최근 소비 기록
   Widget expenditureListElement(ExpenditureModel model) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 10.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Container(
-            decoration: BoxDecoration(
-                color: const Color.fromARGB(255, 230, 230, 230),
-                borderRadius: BorderRadius.circular(7.0)),
-            padding: const EdgeInsets.only(
-                top: 3.0, right: 6.0, bottom: 3.0, left: 6.0),
-            child: Row(
-              children: [
-                // SvgPicture.asset(model.svgIcon),
-                Image.asset(
-                  'assets/images/select_category/${categoryIconNameMap[upperToCategoryMap[model.upperCategoryType]]}.png',
-                  width: 22.0,
-                  height: 22.0,
-                  fit: BoxFit.contain, // 이미지가 정사각형 영역에 비율을 유지하며 맞춰짐
-                ),
-                const SizedBox(
-                  width: 12.0,
-                ),
-                Text(
-                  upperToCategoryMap[model.upperCategoryType]!,
-                  style: const TextStyle(
-                    fontSize: 13.0,
-                  ),
-                ),
-              ],
-            ),
-          ),
           Row(
             children: [
-              Text(
-                // yyyy-MM-ddTHH:mm:ss 중에 yyyy-MM-dd이 부분만 보이도록 설정
-                model.date.split('T')[0],
-                style: const TextStyle(
-                  fontSize: 13.0,
+              // 소비 카테고리
+              Container(
+                decoration: BoxDecoration(
+                    color: const Color.fromARGB(255, 230, 230, 230),
+                    borderRadius: BorderRadius.circular(7.0)),
+                padding: const EdgeInsets.only(
+                    top: 3.0, right: 6.0, bottom: 3.0, left: 6.0),
+                child: Row(
+                  children: [
+                    // SvgPicture.asset(model.svgIcon),
+                    Image.asset(
+                      'assets/images/select_category/${categoryIconNameMap[upperToCategoryMap[model.upperCategoryType]]}.png',
+                      width: 22.0,
+                      height: 22.0,
+                      fit: BoxFit.contain, // 이미지가 정사각형 영역에 비율을 유지하며 맞춰짐
+                    ),
+                    const SizedBox(
+                      width: 12.0,
+                    ),
+                    Text(
+                      upperToCategoryMap[model.upperCategoryType]!,
+                      style: const TextStyle(
+                        fontSize: 13.0,
+                      ),
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(
                 width: 10.0,
               ),
+              // 소비 날짜
+              Text(
+                // yyyy-MM-ddTHH:mm:ss 중에 MM-dd이 부분만 보이도록 설정
+                '${model.dateTime.substring(5, 7)}/${model.dateTime.substring(8, 10)}',
+                style: const TextStyle(
+                  fontSize: 13.0,
+                ),
+              ),
+            ],
+          ),
+          // 소비 금액
+          Row(
+            children: [
               SizedBox(
-                width: 63.0,
+                width: 80.0,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [

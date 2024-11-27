@@ -24,12 +24,12 @@ class ExpenditureListModel {
 
 class ExpenditureModel {
   final int id, expenseAmount;
-  final String memberEmail, upperCategoryType, date;
+  final String memberEmail, upperCategoryType, dateTime;
 
   ExpenditureModel.fromJson(Map<dynamic, dynamic> json)
       : id = json['id'] ?? 0,
         expenseAmount = json['expenseAmount'] ?? 0,
         memberEmail = json['memberEmail'] ?? '',
         upperCategoryType = json['upperCategoryType'] ?? '',
-        date = json['date'] ?? '';
+        dateTime = json['dateTime'] ?? '';
 }

@@ -46,10 +46,11 @@ class _AddExpenditureState extends State<AddExpenditure> {
       // 지출 금액을 int 형식으로 변환
       int amount = int.parse(amountController.text.split(',').join());
 
-      // 지출 추가하는 api사용
+      // 지출 추가하는 api 호출
       final addSpendingResult = await SpendingService.addSpending(
         categoryToUpperMap[selectedCategory]!,
         formattedDate,
+        // '2024-10-25T10:26:29',
         amount,
       );
       Navigator.of(context).pop(addSpendingResult);

@@ -5,6 +5,7 @@ import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GetInfo extends StatefulWidget {
   const GetInfo({super.key});
@@ -32,6 +33,8 @@ class _GetInfoState extends State<GetInfo> {
         ageController.text.isNotEmpty &&
         selectedGender.isNotEmpty &&
         selectedJob.isNotEmpty) {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setStringList("comparisonCategoryList", ['식비', '주거', '이동']);
       // api 사용
       var result = await SigninService.submitInfo(nameController.text,
           selectedGender, incomeController.text, selectedJob);

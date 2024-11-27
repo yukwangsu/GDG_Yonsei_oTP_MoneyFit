@@ -1,3 +1,4 @@
+import 'package:flutter_financemanager/models/category_expenditure.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/secrets.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +29,7 @@ class SpendingService {
 
     var data = {
       'upperCategoryType': category,
-      'date': date,
+      'dateTime': date,
       'expenseAmount': amount,
     };
 
@@ -94,7 +95,7 @@ class SpendingService {
   }
 
   // 카테고리별 이번달 총 소비 금액
-  static Future<bool> getCategoryMonthlySpending(
+  static Future<CategoryExpenditureListModel> getCategoryMonthlySpending(
     String year,
     String month,
   ) async {
@@ -124,7 +125,7 @@ class SpendingService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('getCategoryMonthlySpending 성공');
         final responseData = json.decode(utf8Body);
-        return true;
+        return CategoryExpenditureListModel.fromJson(responseData);
       } else {
         print('getCategoryMonthlySpending 실패');
         print(response.body);
@@ -136,8 +137,8 @@ class SpendingService {
     }
   }
 
-  // 이번달 총 소비 금액, 저번달에 비해 절약한 금액
-  static Future<bool> getMonthlySpending(
+  // 한달 총 소비 금액
+  static Future<double> getMonthlySpending(
     String year,
     String month,
   ) async {
@@ -166,7 +167,7 @@ class SpendingService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('getMonthlySpending 성공');
         final responseData = json.decode(utf8Body);
-        return true;
+        return responseData;
       } else {
         print('getMonthlySpending 실패');
         print(response.body);
