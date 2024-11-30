@@ -97,6 +97,81 @@ class GoalService {
     }
   }
 
+  // 목표 수정하기
+  static Future<bool> editGoalService(
+    int id,
+    int amount,
+  ) async {
+    final url = Uri.parse('$uri/android/expense-objective/update/$id/$amount');
+
+    // token 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('moneyfitAccessToken');
+
+    print('*****token: $token*****');
+
+    var headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.put(url, headers: headers);
+      print('----------editGoalService----------');
+      print('Response status: ${response.statusCode}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('editGoalService 성공');
+        print(response.body);
+        return true;
+      } else {
+        print('editGoalService 실패');
+        print(response.body);
+        return false;
+      }
+    } catch (e) {
+      print('Error during editGoalService: $e');
+      return false;
+    }
+  }
+
+  // 목표 삭제하기
+  static Future<bool> deleteGoalService(
+    int id,
+  ) async {
+    final url = Uri.parse('$uri/android/expense-objective/delete/$id');
+
+    // token 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('moneyfitAccessToken');
+
+    print('*****token: $token*****');
+
+    var headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.delete(url, headers: headers);
+      print('----------deleteGoalService----------');
+      print('Response status: ${response.statusCode}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('deleteGoalService 성공');
+        print(response.body);
+        return true;
+      } else {
+        print('deleteGoalService 실패');
+        print(response.body);
+        return false;
+      }
+    } catch (e) {
+      print('Error during deleteGoalService: $e');
+      return false;
+    }
+  }
+
   // 획득한 배지 불러오기
   static Future<BadgeListModel> getBadgeService() async {
     final url = Uri.parse('$uri/android/badges/list');

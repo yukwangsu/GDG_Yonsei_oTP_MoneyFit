@@ -28,9 +28,10 @@ class _AskDeleteGoalState extends State<AskDeleteGoal> {
 
   // 삭제 버튼을 눌렀을 때
   void onClickDeleteButton() async {
-    // 지출 추가하는 api 호출
-    // final deleteGoalResult = await GoalService.deleteGoalService();
-    Navigator.of(context).pop(true);
+    // // 목표 삭제하는 api 호출
+    // final deleteGoalResult = await GoalService.deleteGoalService(widget.id);
+    // Navigator.of(context).pop(deleteGoalResult);
+    Navigator.of(context).pop(true); // 임시
   }
 
   // 취소 버튼을 눌렀을 때

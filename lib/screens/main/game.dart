@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/services/game_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/attendance_widget.dart';
 import 'dart:math';
@@ -15,32 +16,51 @@ class _GameScreenState extends State<GameScreen> {
       .toUtc()
       .add(const Duration(hours: 9))
       .weekday; // 오늘 요일 가져오기
-  int rewardForFiveDays = -1; // 5일 연속 출석 최대 보상 저장
+
+  // 추후 삭제
+  // int rewardForFiveDays = -1; // 5일 연속 출석 최대 보상 저장
   int myPoint = 3632; // 나의 포인트
   final int gachaCost = 1000; // 뽑기 비용
   final int prizeBoxChance = 2; // 당첨 박스가 존재할 확률(2 -> 1/2)
   bool isPrizeBoxPresent = false; // 당첨 박스 존재 유무
   int prizeBoxId = -1; // 당첨 상자 번호
   bool isGachaAvailable = false; // 뽑기가 가능한지
+  //
+
   String mode =
       'intro'; // intro: 처음 화면, gacha: 뽑기 화면, fail: 실패 화면, success: 성공 화면
 
   @override
   void initState() {
     super.initState();
-    initRewardForFiveDays();
+
+    // 추후 삭제
+    // initRewardForFiveDays();
     checkGachaAvailable();
     initPrizeBoxPresent();
+    //
+
+    // 보유 포인트 불러오기
+    // GameService.getLeftPoint();
+
+    // 출석 포인트 증정
+    // GameService.attendance();
+
+    // 뽑기
+    // GameService.gachaService();
+
+    // 포인트 증가
+    // GameService.addPoint();
   }
 
-  void initRewardForFiveDays() {
-    setState(() {
-      for (int i = 0; i < 5; i++) {
-        rewardForFiveDays += attendanceReward[
-            (weekday + i) > 7 ? weekday + i - 7 : weekday + i]!;
-      }
-    });
-  }
+  // void initRewardForFiveDays() {
+  //   setState(() {
+  //     for (int i = 0; i < 5; i++) {
+  //       rewardForFiveDays += attendanceReward[
+  //           (weekday + i) > 7 ? weekday + i - 7 : weekday + i]!;
+  //     }
+  //   });
+  // }
 
   void checkGachaAvailable() async {
     // 보유 포인트 불러오기
@@ -199,7 +219,12 @@ class _GameScreenState extends State<GameScreen> {
                           const SizedBox(
                             width: 3.0,
                           ),
-                          Text('$rewardForFiveDays'),
+                          const Text(
+                            '200',
+                            style: TextStyle(
+                              fontSize: 13.0,
+                            ),
+                          ),
                         ],
                       ),
                       const SizedBox(
@@ -215,9 +240,10 @@ class _GameScreenState extends State<GameScreen> {
                               day: dayText[(weekday + i) > 7
                                   ? weekday + i - 7
                                   : weekday + i]!,
-                              point: attendanceReward[(weekday + i) > 7
-                                  ? weekday + i - 7
-                                  : weekday + i]!,
+                              // point: attendanceReward[(weekday + i) > 7
+                              //     ? weekday + i - 7
+                              //     : weekday + i]!,
+                              point: attendanceReward[i + 1]!,
                               checked: i == 0 ? true : false,
                             )
                         ],

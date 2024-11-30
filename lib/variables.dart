@@ -140,15 +140,24 @@ Map<int, String> dayText = {
   7: '일',
 };
 
-// 요일(숫자) - point
+// // 요일(숫자) - point
+// Map<int, int> attendanceReward = {
+//   1: 40, // 월
+//   2: 40, // 화
+//   3: 80,
+//   4: 80,
+//   5: 120,
+//   6: 160,
+//   7: 200,
+// };
+
+// 출석 포인트
 Map<int, int> attendanceReward = {
-  1: 40, // 월
-  2: 40, // 화
-  3: 80,
-  4: 80,
-  5: 120,
-  6: 160,
-  7: 200,
+  1: 20, // 연속 1일차
+  2: 30, // 연속 2일차 ...
+  3: 40,
+  4: 50,
+  5: 60,
 };
 
 Map<int, Map<String, int>> spendingByAgeCategory = {

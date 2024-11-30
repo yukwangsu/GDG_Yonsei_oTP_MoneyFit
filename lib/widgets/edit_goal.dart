@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_financemanager/services/goal_service.dart';
 import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
 import 'package:intl/intl.dart';
@@ -37,13 +38,14 @@ class _EditGoalState extends State<EditGoal> {
   // 확인 버튼을 눌렀을 때
   void onClickConfirmButton() async {
     if (amountController.text.isNotEmpty) {
-      // 목표 수정하는 api 호출
-      // final addSpendingResult = await SpendingService.addSpending(
-      //   categoryToUpperMap[selectedCategory]!,
-      //   formattedDate,
-      //   amount,
-      // );
-      Navigator.of(context).pop(true);
+      // // 목표 수정하는 api 호출
+      // final editGoalResult = await GoalService.editGoalService(
+      //     widget.id,
+      //     int.parse(
+      //       amountController.text.split(',').join(),
+      //     ));
+      // Navigator.of(context).pop(editGoalResult);
+      Navigator.of(context).pop(true); // 임시
     }
   }
 
