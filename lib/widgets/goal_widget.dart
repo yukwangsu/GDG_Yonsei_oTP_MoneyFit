@@ -120,7 +120,9 @@ class GoalText extends StatelessWidget {
               Text(
                 ' 원으로 제한하기',
                 style: TextStyle(
-                  color: isOverGoal ? const Color(0xFFA9B2BC) : Colors.black,
+                  color: isOverGoal
+                      ? const Color.fromARGB(255, 23, 25, 27)
+                      : Colors.black,
                   fontSize: 12,
                 ),
               ),

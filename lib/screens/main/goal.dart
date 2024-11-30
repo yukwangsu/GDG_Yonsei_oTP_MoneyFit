@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/models/badge_model.dart';
 import 'package:flutter_financemanager/services/goal_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_goal.dart';
+import 'package:flutter_financemanager/widgets/ask_delete_goal.dart';
 import 'package:flutter_financemanager/widgets/badge_widget.dart';
+import 'package:flutter_financemanager/widgets/edit_goal.dart';
 import 'package:flutter_financemanager/widgets/goal_widget.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
@@ -16,6 +19,7 @@ class GoalScreen extends StatefulWidget {
 
 class _GoalScreenState extends State<GoalScreen> {
   bool showBadgeMore = false; // 업적 배지 더보기 저장 변수
+  late Future<BadgeListModel> earnedBadgeList; // 획득한 배지들 저장하는 변수
 
   @override
   void initState() {
@@ -25,7 +29,11 @@ class _GoalScreenState extends State<GoalScreen> {
     DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
     // 날짜를 원하는 형식으로 포맷팅
     String formattedDate = DateFormat('yyyy-MM').format(nowInKorea);
+
     // GoalService.getGoalService(formattedDate);
+
+    // 획득한 배지 불러오기
+    earnedBadgeList = GoalService.getBadgeService();
   }
 
   // 업적 배지 더보기를 눌렀을 때
@@ -33,6 +41,34 @@ class _GoalScreenState extends State<GoalScreen> {
     setState(() {
       showBadgeMore = !showBadgeMore;
     });
+  }
+
+  // 휴지통을 눌렀을 경우
+  void _onClickdeleteGoalButton(int id) async {
+    final deleteGoalResult = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AskDeleteGoal(id: id);
+      },
+    );
+    // 삭제를 눌렀을 경우
+    if (deleteGoalResult != null && deleteGoalResult) {
+      setState(() {});
+    }
+  }
+
+  // 금액 수정을 눌렀을 경우
+  void _onClickEditGoalButton(int id) async {
+    final deleteGoalResult = await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return EditGoal(id: id);
+      },
+    );
+    // 변경을 눌렀을 경우
+    if (deleteGoalResult != null && deleteGoalResult) {
+      setState(() {});
+    }
   }
 
   List<Map<String, dynamic>> goals = [
@@ -55,159 +91,6 @@ class _GoalScreenState extends State<GoalScreen> {
       'progress': 157000,
     },
   ];
-
-  void _updateGoalAmount(int index, int newGoal) {
-    setState(() {
-      goals[index]['goal'] = newGoal;
-    });
-  }
-
-  void _deleteGoal(int index) {
-    setState(() {
-      goals.removeAt(index);
-    });
-  }
-
-  void _showEditAmountDialog(BuildContext context, int index) {
-    final TextEditingController controller = TextEditingController(
-      text: goals[index]['goal'].toString(),
-    );
-
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '목표 금액 수정',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: controller,
-                keyboardType: TextInputType.number,
-                decoration: const InputDecoration(
-                  labelText: '새 목표 금액 입력',
-                  border: OutlineInputBorder(),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFd9d9d9),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('취소'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final int? newGoal = int.tryParse(controller.text);
-                      if (newGoal != null) {
-                        _updateGoalAmount(index, newGoal);
-                      }
-                      Navigator.of(context).pop();
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFd2e0fb),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('확인'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  void _showDeleteDialog(BuildContext context, int index) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(15.0),
-        ),
-        child: Container(
-          padding: const EdgeInsets.all(20.0),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15.0),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Align(
-                alignment: Alignment.centerLeft,
-                child: Text(
-                  '삭제 확인',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 30),
-              const Text(
-                '정말 삭제하시겠습니까?',
-                style: TextStyle(fontSize: 15, color: Colors.black),
-              ),
-              const SizedBox(height: 40),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // 팝업창 닫기
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFd9d9d9),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('아니요'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // 팝업창 닫기
-                      _deleteGoal(index); // 삭제 수행
-                    },
-                    style: TextButton.styleFrom(
-                      backgroundColor: const Color(0xFFd2e0fb),
-                      foregroundColor: Colors.black,
-                    ),
-                    child: const Text('예'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -273,26 +156,69 @@ class _GoalScreenState extends State<GoalScreen> {
                     ),
                     const SizedBox(height: 13.0),
                     // 배지들
-                    Column(
-                      children: [
-                        Wrap(
-                          spacing: 15.0,
-                          runSpacing: 15.0,
-                          children: [
+                    FutureBuilder(
+                        future: earnedBadgeList,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // 데이터가 로드 중일 때 로딩 표시
+                            return const SizedBox(
+                              height: 295.0,
+                              child: Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              ),
+                            );
+                          } else if (snapshot.hasError) {
+                            // 오류가 발생했을 때
+                            return SizedBox(
+                                height: 295.0,
+                                child: Text('Error: ${snapshot.error}'));
+                          } else {
+                            // 불러온 데이터 저장하기
+                            final List<BadgeModel> resultEarnedBadgeList =
+                                snapshot.data!.badgeList;
+                            final List<String> resultEarnedBadgeTypeList = [];
+                            // 불러온 데이터 중 획득한 배지 이름(type)만 리스트에 저장
                             for (int i = 0;
-                                i < (showBadgeMore ? badgeList.length : 4);
-                                i++)
-                              BadgeWidget(
-                                title: badgeList[i]['title']!,
-                                description: badgeList[i]['description']!,
-                                achieved: true,
-                                image: badgeList[i]['image']!,
-                                whiteImage: badgeList[i]['whiteImage']!,
-                              )
-                          ],
-                        )
-                      ],
-                    ),
+                                i < resultEarnedBadgeList.length;
+                                i++) {
+                              resultEarnedBadgeTypeList
+                                  .add(resultEarnedBadgeList[i].badgeType);
+                            }
+                            return Column(
+                              children: [
+                                Wrap(
+                                  spacing: 15.0,
+                                  runSpacing: 15.0,
+                                  children: [
+                                    for (int i = 0;
+                                        i <
+                                            (showBadgeMore
+                                                ? badgeList.length
+                                                : 4);
+                                        i++)
+                                      BadgeWidget(
+                                        title: badgeList[i]['title']!,
+                                        description: badgeList[i]
+                                            ['description']!,
+                                        achieved: resultEarnedBadgeTypeList
+                                                .contains(badgeList[i]['name'])
+                                            ? true
+                                            : false,
+                                        image: badgeList[i]['image']!,
+                                        whiteImage: badgeList[i]['whiteImage']!,
+                                      )
+                                  ],
+                                )
+                              ],
+                            );
+                          }
+                        }),
                     const SizedBox(
                       height: 20.0,
                     ),
@@ -348,8 +274,8 @@ class _GoalScreenState extends State<GoalScreen> {
                             description: goal['description'],
                             progress: goal['progress'],
                             goal: goal['goal'],
-                            onDelete: () => _showDeleteDialog(context, index),
-                            onEdit: () => _showEditAmountDialog(context, index),
+                            onDelete: () => _onClickdeleteGoalButton(0),
+                            onEdit: () => _onClickEditGoalButton(0),
                           );
                         }),
                       ),

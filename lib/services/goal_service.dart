@@ -1,3 +1,4 @@
+import 'package:flutter_financemanager/models/badge_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/secrets.dart';
 import 'package:http/http.dart' as http;
@@ -87,6 +88,46 @@ class GoalService {
         // return ExpenditureListModel.fromJson(responseData);
       } else {
         print('getGoalService 실패');
+        print(response.body);
+        throw Error();
+      }
+    } catch (e) {
+      print('Error during getGoalService: $e');
+      throw Error();
+    }
+  }
+
+  // 획득한 배지 불러오기
+  static Future<BadgeListModel> getBadgeService() async {
+    final url = Uri.parse('$uri/android/badges/list');
+
+    // token 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('moneyfitAccessToken');
+
+    print('*****token: $token*****');
+
+    var headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.get(url, headers: headers);
+      print('----------getBadgeService----------');
+      print('Response status: ${response.statusCode}');
+
+      // UTF-8로 응답을 수동 디코딩
+      final utf8Body = utf8.decode(response.bodyBytes);
+      print('Response body: $utf8Body');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        print('getBadgeService 성공');
+        final responseData = json.decode(utf8Body);
+        // return true;
+        return BadgeListModel.fromJson(responseData);
+      } else {
+        print('getBadgeService 실패');
         print(response.body);
         throw Error();
       }

@@ -200,8 +200,10 @@ class _HomeScreenState extends State<HomeScreen> {
     for (int i = 0; i < list.length; i++) {
       spendSum += list[i].totalExpense;
     }
-    for (int i = 0; i < list.length; i++) {
-      countList.add((list[i].totalExpense / spendSum * 100).floor());
+    if (spendSum > 0) {
+      for (int i = 0; i < list.length; i++) {
+        countList.add((list[i].totalExpense / spendSum * 100).floor());
+      }
     }
     for (int i = 0; i < countList.length; i++) {
       countSum += countList[i];
@@ -342,7 +344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         // 파이 차트
                                         Padding(
                                           padding:
-                                              const EdgeInsets.only(left: 36.0),
+                                              const EdgeInsets.only(left: 25.0),
                                           child: Stack(
                                             alignment: Alignment.center,
                                             children: [
