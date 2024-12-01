@@ -1,5 +1,6 @@
 import 'package:flutter_financemanager/models/badge_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
+import 'package:flutter_financemanager/models/goal_model.dart';
 import 'package:flutter_financemanager/secrets.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -56,7 +57,7 @@ class GoalService {
   }
 
   // 목표 불러오기
-  static Future<bool> getGoalService(
+  static Future<GoalListModel> getGoalService(
     String date,
   ) async {
     final url = Uri.parse('$uri/android/expense-objective/list/$date');
@@ -84,8 +85,8 @@ class GoalService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('getGoalService 성공');
         final responseData = json.decode(utf8Body);
-        return true;
-        // return ExpenditureListModel.fromJson(responseData);
+        // return true;
+        return GoalListModel.fromJson(responseData);
       } else {
         print('getGoalService 실패');
         print(response.body);

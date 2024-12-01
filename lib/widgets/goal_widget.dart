@@ -3,38 +3,41 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
 class GoalWidget extends StatelessWidget {
-  final String title;
-  final String description;
-  final int progress;
-  final int goal;
+  final int index;
+  final String category;
+  final int spentAmount;
+  final int targetSpendingAmount;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
   const GoalWidget({
     super.key,
-    required this.title,
-    required this.description,
-    required this.progress,
-    required this.goal,
+    required this.index,
+    required this.category,
+    required this.spentAmount,
+    required this.targetSpendingAmount,
     required this.onDelete,
     required this.onEdit,
   });
 
   @override
   Widget build(BuildContext context) {
-    final bool isOverGoal = progress > goal;
+    final bool isOverGoal = spentAmount > targetSpendingAmount;
 
     return Column(
       children: [
         GoalText(
-          title: title,
-          description: description,
-          goal: goal,
+          index: index,
+          category: category,
+          targetSpendingAmount: targetSpendingAmount,
           isOverGoal: isOverGoal,
           onDelete: onDelete,
           onEdit: onEdit,
         ),
-        GoalStatus(progress: progress, goal: goal, isOverGoal: isOverGoal),
+        GoalStatus(
+            spentAmount: spentAmount,
+            targetSpendingAmount: targetSpendingAmount,
+            isOverGoal: isOverGoal),
         const SizedBox(height: 20),
       ],
     );
@@ -42,18 +45,18 @@ class GoalWidget extends StatelessWidget {
 }
 
 class GoalText extends StatelessWidget {
-  final String title;
-  final String description;
-  final int goal;
+  final int index;
+  final String category;
+  final int targetSpendingAmount;
   final bool isOverGoal;
   final VoidCallback onDelete;
   final VoidCallback onEdit;
 
   const GoalText({
     super.key,
-    required this.title,
-    required this.description,
-    required this.goal,
+    required this.index,
+    required this.category,
+    required this.targetSpendingAmount,
     required this.isOverGoal,
     required this.onDelete,
     required this.onEdit,
@@ -65,7 +68,7 @@ class GoalText extends StatelessWidget {
       width: double.infinity,
       height: 40,
       decoration: BoxDecoration(
-        color: const Color(0xFFf3f4f7),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(8.0),
         boxShadow: [
           BoxShadow(
@@ -84,7 +87,7 @@ class GoalText extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 20.0, right: 10.0),
             child: Text(
-              title,
+              '목표 $index',
               style: TextStyle(
                 color: isOverGoal
                     ? const Color(0xFFA9B2BC)
@@ -97,19 +100,21 @@ class GoalText extends StatelessWidget {
           // 목표 내용
           Row(
             children: [
+              // 1. 카테고리 제목
               Text(
-                '$description ',
+                '$category 지출 ',
                 style: TextStyle(
                   color: isOverGoal ? const Color(0xFFA9B2BC) : Colors.black,
                   fontSize: 12,
                 ),
               ),
+              // 2. 목표 금액
               GestureDetector(
                 onTap: () {
                   onEdit();
                 },
                 child: Text(
-                  formatNumber(goal),
+                  formatNumber(targetSpendingAmount),
                   style: TextStyle(
                     color: isOverGoal ? const Color(0xFFA9B2BC) : Colors.black,
                     fontSize: 12,
@@ -117,12 +122,11 @@ class GoalText extends StatelessWidget {
                   ),
                 ),
               ),
+              // 3. 원으로 제한하기
               Text(
                 ' 원으로 제한하기',
                 style: TextStyle(
-                  color: isOverGoal
-                      ? const Color.fromARGB(255, 23, 25, 27)
-                      : Colors.black,
+                  color: isOverGoal ? const Color(0xFFA9B2BC) : Colors.black,
                   fontSize: 12,
                 ),
               ),
@@ -145,21 +149,22 @@ class GoalText extends StatelessWidget {
 }
 
 class GoalStatus extends StatelessWidget {
-  final int progress;
-  final int goal;
+  final int spentAmount;
+  final int targetSpendingAmount;
   final bool isOverGoal;
 
   const GoalStatus({
     super.key,
-    required this.progress,
-    required this.goal,
+    required this.spentAmount,
+    required this.targetSpendingAmount,
     required this.isOverGoal,
   });
 
   @override
   Widget build(BuildContext context) {
-    final double progressFactor =
-        goal > 0 ? 1 - (progress / goal).clamp(0.0, 1.0) : 0.0;
+    final double progressFactor = targetSpendingAmount > 0
+        ? 1 - (spentAmount / targetSpendingAmount).clamp(0.0, 1.0)
+        : 0.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -192,8 +197,8 @@ class GoalStatus extends StatelessWidget {
             children: [
               Text(
                 isOverGoal
-                    ? '${formatNumber(progress)}원 사용 / ${formatNumber(progress - goal)}원 초과'
-                    : '${formatNumber(progress)}원 사용 / ${formatNumber(goal - progress)}원 남음',
+                    ? '${formatNumber(spentAmount)}원 사용 / ${formatNumber(spentAmount - targetSpendingAmount)}원 초과'
+                    : '${formatNumber(spentAmount)}원 사용 / ${formatNumber(targetSpendingAmount - spentAmount)}원 남음',
                 style: TextStyle(
                   fontSize: 11,
                   color: isOverGoal ? Colors.red : Colors.black,
@@ -201,7 +206,7 @@ class GoalStatus extends StatelessWidget {
                 ),
               ),
               Text(
-                '${formatNumber(goal)}원',
+                '${formatNumber(targetSpendingAmount)}원',
                 style: const TextStyle(
                   fontSize: 11,
                   color: Color(0xff565555),

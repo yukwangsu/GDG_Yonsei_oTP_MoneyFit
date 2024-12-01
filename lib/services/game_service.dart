@@ -7,7 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class GameService {
   // 잔여 포인트 불러오기
-  static Future<bool> getLeftPoint() async {
+  static Future<int> getLeftPoint() async {
     final url = Uri.parse('$uri/android/points');
 
     // token 가져오기
@@ -33,8 +33,8 @@ class GameService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('getLeftPoint 성공');
         final responseData = json.decode(utf8Body);
-        return true;
-        // return ExpenditureListModel.fromJson(responseData);
+        return responseData['leftPoints'];
+        // return true;
       } else {
         print('getLeftPoint 실패');
         print(response.body);
@@ -47,7 +47,7 @@ class GameService {
   }
 
   // 출석
-  static Future<bool> attendance() async {
+  static Future<int> attendance() async {
     final url = Uri.parse('$uri/android/points/attendancePoints');
 
     // token 가져오기
@@ -73,8 +73,8 @@ class GameService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('attendance 성공');
         final responseData = json.decode(utf8Body);
-        return true;
-        // return ExpenditureListModel.fromJson(responseData);
+        return responseData['consecutiveDays'];
+        // return true;
       } else {
         print('attendance 실패');
         print(response.body);
@@ -114,7 +114,7 @@ class GameService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('gachaService 성공');
         final responseData = json.decode(utf8Body);
-        return true;
+        return responseData['isSuccess'];
         // return ExpenditureListModel.fromJson(responseData);
       } else {
         print('gachaService 실패');

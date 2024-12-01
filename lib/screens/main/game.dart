@@ -16,6 +16,10 @@ class _GameScreenState extends State<GameScreen> {
       .toUtc()
       .add(const Duration(hours: 9))
       .weekday; // 오늘 요일 가져오기
+  late Future<int> userPoint; // 보유 포인트 저장
+  late Future<int> consecutiveDays; // 연속 출석일 저장
+  bool isGachaAvailable = false; // 뽑기가 가능한지 저장
+  bool isWaitingGachaResult = false; // 뽑기 결과를 기다리는지 저장
 
   // 추후 삭제
   // int rewardForFiveDays = -1; // 5일 연속 출석 최대 보상 저장
@@ -24,7 +28,6 @@ class _GameScreenState extends State<GameScreen> {
   final int prizeBoxChance = 2; // 당첨 박스가 존재할 확률(2 -> 1/2)
   bool isPrizeBoxPresent = false; // 당첨 박스 존재 유무
   int prizeBoxId = -1; // 당첨 상자 번호
-  bool isGachaAvailable = false; // 뽑기가 가능한지
   //
 
   String mode =
@@ -36,15 +39,20 @@ class _GameScreenState extends State<GameScreen> {
 
     // 추후 삭제
     // initRewardForFiveDays();
-    checkGachaAvailable();
-    initPrizeBoxPresent();
+    // checkGachaAvailable();
+    // initPrizeBoxPresent();
     //
 
-    // 보유 포인트 불러오기
-    // GameService.getLeftPoint();
+    // setState(() {
+    //   // 보유 포인트 불러오기
+    //   userPoint = GameService.getLeftPoint();
+    // });
+
+    // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
+    checkPointAndGacha();
 
     // 출석 포인트 증정
-    // GameService.attendance();
+    consecutiveDays = GameService.attendance();
 
     // 뽑기
     // GameService.gachaService();
@@ -62,53 +70,85 @@ class _GameScreenState extends State<GameScreen> {
   //   });
   // }
 
-  void checkGachaAvailable() async {
+  // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
+  void checkPointAndGacha() async {
     // 보유 포인트 불러오기
-    // myPoint = 3632; // 임시
-    if (myPoint >= gachaCost) {
-      setState(() {
-        isGachaAvailable = true;
-      });
-    } else {
-      setState(() {
-        isGachaAvailable = false;
-      });
-    }
+    int resultPoint = await checkPoint();
+    setState(() {
+      // 뽑기 가능 여부 판단
+      isGachaAvailable = resultPoint >= gachaCost ? true : false;
+    });
   }
 
-  // 당첨 박스 존재 유무 설정
-  void initPrizeBoxPresent() {
-    isPrizeBoxPresent = Random().nextInt(prizeBoxChance) == 0;
+  // 보유 포인트를 불러와서 반환
+  Future<int> checkPoint() async {
+    userPoint = GameService.getLeftPoint();
+    return userPoint;
   }
+
+  // void checkGachaAvailable() async {
+  //   // 보유 포인트 불러오기
+  //   // myPoint = 3632; // 임시
+  //   if (myPoint >= gachaCost) {
+  //     setState(() {
+  //       isGachaAvailable = true;
+  //     });
+  //   } else {
+  //     setState(() {
+  //       isGachaAvailable = false;
+  //     });
+  //   }
+  // }
+
+  // // 당첨 박스 존재 유무 설정
+  // void initPrizeBoxPresent() {
+  //   isPrizeBoxPresent = Random().nextInt(prizeBoxChance) == 0;
+  // }
 
   // 뽑기 시작 버튼을 눌렀을 때
   void onClickGachaStartButton() {
     setState(() {
       // 화면 모드 변경
       mode = 'gacha';
-      // 확률
-      if (isPrizeBoxPresent) {
-        // 당첨 박스가 존재할 경우
-        prizeBoxId = Random().nextInt(5);
-      } else {
-        // 당첨 박스가 존재하지 않을 경우
-        prizeBoxId = -1;
-      }
-      // 정답
-      print('당첨 박스 존재 유무: $isPrizeBoxPresent');
-      print('당첨 박스 번호: $prizeBoxId');
-      // 당첨 박스 존재 유무 초기화
-      initPrizeBoxPresent();
+      // // 확률
+      // if (isPrizeBoxPresent) {
+      //   // 당첨 박스가 존재할 경우
+      //   prizeBoxId = Random().nextInt(5);
+      // } else {
+      //   // 당첨 박스가 존재하지 않을 경우
+      //   prizeBoxId = -1;
+      // }
+      // // 정답
+      // print('당첨 박스 존재 유무: $isPrizeBoxPresent');
+      // print('당첨 박스 번호: $prizeBoxId');
+      // // 당첨 박스 존재 유무 초기화
+      // initPrizeBoxPresent();
     });
   }
 
   // 뽑기 상자를 선택했을 때
-  void selectGachaBox(int number) {
-    // 뽑기 비용 차감(추후 api로 대체)
-    myPoint -= gachaCost;
+  void selectGachaBox(int number) async {
+    // // 뽑기 비용 차감(추후 api로 대체)
+    // myPoint -= gachaCost;
+
+    // 뽑기 결과 대기
+    setState(() {
+      isWaitingGachaResult = true;
+    });
+
+    // 뽑기 api호출
+    bool resultGacha = await GameService.gachaService();
+
+    // 뽑기 결과가 나왔을 때
+    setState(() {
+      isWaitingGachaResult = false;
+    });
+
     // 다음 뽑기 가능한지 확인
-    checkGachaAvailable();
-    if (number == prizeBoxId) {
+    checkPointAndGacha();
+
+    // 뽑기 결과 처리
+    if (resultGacha) {
       // 당첨됐을 경우
       print('당첨!!!');
       setState(() {
@@ -195,12 +235,42 @@ class _GameScreenState extends State<GameScreen> {
                         height: 6.0,
                       ),
                       // 보유 포인트
-                      Text(
-                        '$myPoint P',
-                        style: const TextStyle(
-                          fontSize: 24.0,
-                          fontWeight: FontWeight.bold,
-                        ),
+
+                      FutureBuilder(
+                        future: userPoint,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // 데이터가 로드 중일 때 로딩 표시
+                            return const Text(
+                              ' P',
+                              style: TextStyle(
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            );
+                          } else if (snapshot.hasError) {
+                            // 오류가 발생했을 때
+                            return Text('Error: ${snapshot.error}');
+                          } else {
+                            // 불러온 데이터 저장하기
+                            final int resultUserPoint = snapshot.data!;
+                            return GestureDetector(
+                              onDoubleTap: () async {
+                                // 1000포인트 증가(테스트용)
+                                await GameService.addPoint();
+                                checkPointAndGacha();
+                              },
+                              child: Text(
+                                '${formatCurrency(resultUserPoint)} P',
+                                style: const TextStyle(
+                                  fontSize: 24.0,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            );
+                          }
+                        },
                       ),
                       const SizedBox(height: 18.0),
                       // 연속 출석 안내 문구
@@ -231,23 +301,48 @@ class _GameScreenState extends State<GameScreen> {
                         height: 14.0,
                       ),
                       // 요일별 출석
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          for (int i = 0; i < 5; i++)
-                            AttendanceWidget(
-                              // weekday + i 가 7보다 클 경우 -7을 해줌.
-                              day: dayText[(weekday + i) > 7
-                                  ? weekday + i - 7
-                                  : weekday + i]!,
-                              // point: attendanceReward[(weekday + i) > 7
-                              //     ? weekday + i - 7
-                              //     : weekday + i]!,
-                              point: attendanceReward[i + 1]!,
-                              checked: i == 0 ? true : false,
-                            )
-                        ],
+
+                      FutureBuilder(
+                        future: consecutiveDays,
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState ==
+                              ConnectionState.waiting) {
+                            // 데이터가 로드 중일 때 로딩 표시
+                            return const SizedBox(
+                              height: 60.0,
+                            );
+                          } else if (snapshot.hasError) {
+                            // 오류가 발생했을 때
+                            return SizedBox(
+                              height: 60.0,
+                              child: Text('Error: ${snapshot.error}'),
+                            );
+                          } else {
+                            // 불러온 데이터 저장하기
+                            final int resultConsecutiveDays = snapshot.data!;
+                            return Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                for (int i = 0; i < 5; i++)
+                                  AttendanceWidget(
+                                    // weekday + i 가 7보다 클 경우 -7을 해줌.
+                                    day: dayText[(weekday + i) > 7
+                                        ? weekday + i - 7
+                                        : weekday + i]!,
+                                    // point: attendanceReward[(weekday + i) > 7
+                                    //     ? weekday + i - 7
+                                    //     : weekday + i]!,
+                                    point: attendanceReward[i + 1]!,
+                                    checked: i + 1 <= resultConsecutiveDays
+                                        ? true
+                                        : false,
+                                  )
+                              ],
+                            );
+                          }
+                        },
                       ),
+
                       const SizedBox(
                         height: 20.0,
                       ),
@@ -338,56 +433,68 @@ class _GameScreenState extends State<GameScreen> {
 
   // 2. gacha 화면
   Widget gacha() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
+    return Stack(
       children: [
-        const SizedBox(
-          height: 22.0,
-        ),
-        // 텍스트
-        const Text(
-          '오늘의 행운을 상상하며',
-          style: TextStyle(
-            fontSize: 13.0,
+        Center(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 22.0,
+              ),
+              // 텍스트
+              const Text(
+                '오늘의 행운을 상상하며',
+                style: TextStyle(
+                  fontSize: 13.0,
+                ),
+              ),
+              const SizedBox(
+                height: 5.0,
+              ),
+              const Text(
+                '선물을 뽑아주세요!',
+                style: TextStyle(
+                  fontSize: 24.0,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 30.0),
+              // 뽑기 상자
+              Wrap(
+                spacing: 25.0,
+                children: [
+                  for (int i = 0; i < 3; i++)
+                    GestureDetector(
+                      onTap: () {
+                        selectGachaBox(i);
+                      },
+                      child: Image.asset('assets/images/gacha_box.png'),
+                    ),
+                ],
+              ),
+              const SizedBox(height: 30.0),
+              Wrap(
+                spacing: 28.0,
+                children: [
+                  for (int i = 3; i < 5; i++)
+                    GestureDetector(
+                      onTap: () {
+                        selectGachaBox(i);
+                      },
+                      child: Image.asset('assets/images/gacha_box.png'),
+                    ),
+                ],
+              ),
+            ],
           ),
         ),
-        const SizedBox(
-          height: 5.0,
-        ),
-        const Text(
-          '선물을 뽑아주세요!',
-          style: TextStyle(
-            fontSize: 24.0,
-            fontWeight: FontWeight.bold,
+
+        // 뽑기 결과를 기다릴 때
+        if (isWaitingGachaResult)
+          Container(
+            child: const Center(child: CircularProgressIndicator()),
           ),
-        ),
-        const SizedBox(height: 30.0),
-        // 뽑기 상자
-        Wrap(
-          spacing: 25.0,
-          children: [
-            for (int i = 0; i < 3; i++)
-              GestureDetector(
-                onTap: () {
-                  selectGachaBox(i);
-                },
-                child: Image.asset('assets/images/gacha_box.png'),
-              ),
-          ],
-        ),
-        const SizedBox(height: 30.0),
-        Wrap(
-          spacing: 28.0,
-          children: [
-            for (int i = 3; i < 5; i++)
-              GestureDetector(
-                onTap: () {
-                  selectGachaBox(i);
-                },
-                child: Image.asset('assets/images/gacha_box.png'),
-              ),
-          ],
-        ),
       ],
     );
   }

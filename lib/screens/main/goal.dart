@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_financemanager/models/badge_model.dart';
+import 'package:flutter_financemanager/models/goal_model.dart';
 import 'package:flutter_financemanager/services/goal_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_goal.dart';
@@ -20,6 +21,7 @@ class GoalScreen extends StatefulWidget {
 class _GoalScreenState extends State<GoalScreen> {
   bool showBadgeMore = false; // 업적 배지 더보기 저장 변수
   late Future<BadgeListModel> earnedBadgeList; // 획득한 배지들 저장하는 변수
+  late Future<GoalListModel> goalList; // 목표들 저장하는 변수
 
   @override
   void initState() {
@@ -30,10 +32,22 @@ class _GoalScreenState extends State<GoalScreen> {
     // 날짜를 원하는 형식으로 포맷팅
     String formattedDate = DateFormat('yyyy-MM').format(nowInKorea);
 
-    // GoalService.getGoalService(formattedDate);
+    // 목표 불러오기
+    goalList = GoalService.getGoalService(formattedDate);
 
     // 획득한 배지 불러오기
     earnedBadgeList = GoalService.getBadgeService();
+  }
+
+  // 목표 다시 불러오는 함수
+  void _reloadGoal() async {
+    // 현재 날짜 가져오기(한국 날짜)
+    DateTime nowInKorea = DateTime.now().toUtc().add(const Duration(hours: 9));
+    // 날짜를 원하는 형식으로 포맷팅
+    String formattedDate = DateFormat('yyyy-MM').format(nowInKorea);
+    setState(() {
+      goalList = GoalService.getGoalService(formattedDate);
+    });
   }
 
   // 업적 배지 더보기를 눌렀을 때
@@ -44,7 +58,8 @@ class _GoalScreenState extends State<GoalScreen> {
   }
 
   // 휴지통을 눌렀을 경우
-  void _onClickdeleteGoalButton(int id) async {
+  _onClickdeleteGoalButton(int id) async {
+    // 삭제할건지 다시 한 번 물어보는 창 띄움
     final deleteGoalResult = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -53,12 +68,14 @@ class _GoalScreenState extends State<GoalScreen> {
     );
     // 삭제를 눌렀을 경우
     if (deleteGoalResult != null && deleteGoalResult) {
-      setState(() {});
+      // 목표를 다시 불러옴
+      _reloadGoal();
     }
   }
 
   // 금액 수정을 눌렀을 경우
-  void _onClickEditGoalButton(int id) async {
+  _onClickEditGoalButton(int id) async {
+    // 목표 금액을 수정하는 창 띄움
     final deleteGoalResult = await showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -67,30 +84,31 @@ class _GoalScreenState extends State<GoalScreen> {
     );
     // 변경을 눌렀을 경우
     if (deleteGoalResult != null && deleteGoalResult) {
-      setState(() {});
+      // 목표를 다시 불러옴
+      _reloadGoal();
     }
   }
 
-  List<Map<String, dynamic>> goals = [
-    {
-      'title': '목표 1',
-      'description': '식비 지출',
-      'goal': 800000,
-      'progress': 854000,
-    },
-    {
-      'title': '목표 2',
-      'description': '쇼핑 지출',
-      'goal': 600000,
-      'progress': 200000,
-    },
-    {
-      'title': '목표 3',
-      'description': '간식 비용',
-      'goal': 200000,
-      'progress': 157000,
-    },
-  ];
+  // List<Map<String, dynamic>> goals = [
+  //   {
+  //     'title': '목표 1',
+  //     'description': '식비 지출',
+  //     'goal': 800000,
+  //     'progress': 854000,
+  //   },
+  //   {
+  //     'title': '목표 2',
+  //     'description': '쇼핑 지출',
+  //     'goal': 600000,
+  //     'progress': 200000,
+  //   },
+  //   {
+  //     'title': '목표 3',
+  //     'description': '간식 비용',
+  //     'goal': 200000,
+  //     'progress': 157000,
+  //   },
+  // ];
 
   @override
   Widget build(BuildContext context) {
@@ -241,47 +259,78 @@ class _GoalScreenState extends State<GoalScreen> {
                   borderRadius: BorderRadius.circular(29.0),
                 ),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.only(
-                          top: 18.0, right: 21.0, left: 27.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            '이번 달 목표',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(
+                            top: 18.0, right: 21.0, left: 27.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            const Text(
+                              '이번 달 목표',
+                              style: TextStyle(
+                                color: Colors.black,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
-                          ),
-                          addGoalButton(),
-                        ],
+                            addGoalButton(),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(
-                      height: 13.0,
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 25.0),
-                      child: Column(
-                        children: List.generate(goals.length, (index) {
-                          final goal = goals[index];
-                          return GoalWidget(
-                            title: goal['title'],
-                            description: goal['description'],
-                            progress: goal['progress'],
-                            goal: goal['goal'],
-                            onDelete: () => _onClickdeleteGoalButton(0),
-                            onEdit: () => _onClickEditGoalButton(0),
-                          );
-                        }),
+                      const SizedBox(
+                        height: 13.0,
                       ),
-                    ),
-                  ],
-                ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 25.0),
+                        child:
+                            // 목표들
+                            FutureBuilder(
+                          future: goalList,
+                          builder: (context, snapshot) {
+                            if (snapshot.connectionState ==
+                                ConnectionState.waiting) {
+                              // 데이터가 로드 중일 때 로딩 표시
+                              return const Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(
+                                    color: Colors.white,
+                                  ),
+                                ],
+                              );
+                            } else if (snapshot.hasError) {
+                              // 오류가 발생했을 때
+                              return Text('Error: ${snapshot.error}');
+                            } else {
+                              // 불러온 데이터 저장하기
+                              final List<GoalModel> resultGoalList =
+                                  snapshot.data!.goalList;
+                              // 목표 index
+                              int goalIndex = 1;
+                              return Column(children: [
+                                ...resultGoalList.map((goal) {
+                                  return GoalWidget(
+                                    index: goalIndex++,
+                                    category: upperToCategoryMap[
+                                        goal.upperCategoryType]!,
+                                    spentAmount: goal.spentAmount,
+                                    targetSpendingAmount: goal.expenseLimit,
+                                    onDelete: () {
+                                      _onClickdeleteGoalButton(goal.id);
+                                    },
+                                    onEdit: () {
+                                      _onClickEditGoalButton(goal.id);
+                                    },
+                                  );
+                                })
+                              ]);
+                            }
+                          },
+                        ),
+                      ),
+                    ]),
               ),
             ),
 
@@ -294,6 +343,7 @@ class _GoalScreenState extends State<GoalScreen> {
     );
   }
 
+  // 배지 더보기-간략히보기 버튼
   Widget showBadgeModeButton() {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -317,6 +367,7 @@ class _GoalScreenState extends State<GoalScreen> {
     );
   }
 
+  // 목표 추가 버튼
   Widget addGoalButton() {
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
@@ -330,10 +381,8 @@ class _GoalScreenState extends State<GoalScreen> {
         if (addGoalResult != null && addGoalResult) {
           // 목표를 추가했으므로 반영
           print('목표 추가 성공!!!');
-          setState(() {
-            // 목표 불러오기
-            // recentSpendingHistory = SpendingService.getSpending();
-          });
+          // 목표를 다시 불러옴
+          _reloadGoal();
         }
       },
       child: Row(

@@ -39,13 +39,13 @@ class _EditGoalState extends State<EditGoal> {
   void onClickConfirmButton() async {
     if (amountController.text.isNotEmpty) {
       // // 목표 수정하는 api 호출
-      // final editGoalResult = await GoalService.editGoalService(
-      //     widget.id,
-      //     int.parse(
-      //       amountController.text.split(',').join(),
-      //     ));
-      // Navigator.of(context).pop(editGoalResult);
-      Navigator.of(context).pop(true); // 임시
+      final editGoalResult = await GoalService.editGoalService(
+          widget.id,
+          int.parse(
+            amountController.text.split(',').join(),
+          ));
+      Navigator.of(context).pop(editGoalResult);
+      // Navigator.of(context).pop(true); // 임시
     }
   }
 
