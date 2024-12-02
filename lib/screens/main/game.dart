@@ -51,7 +51,7 @@ class _GameScreenState extends State<GameScreen> {
     // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
     checkPointAndGacha();
 
-    // 출석 포인트 증정
+    // 연속 출석 일수 불러오기
     consecutiveDays = GameService.attendance();
 
     // 뽑기
@@ -467,7 +467,10 @@ class _GameScreenState extends State<GameScreen> {
                   for (int i = 0; i < 3; i++)
                     GestureDetector(
                       onTap: () {
-                        selectGachaBox(i);
+                        // 이미 박스를 선택하지 않았을 경우에만 인식
+                        if (!isWaitingGachaResult) {
+                          selectGachaBox(i);
+                        }
                       },
                       child: Image.asset('assets/images/gacha_box.png'),
                     ),
@@ -480,7 +483,10 @@ class _GameScreenState extends State<GameScreen> {
                   for (int i = 3; i < 5; i++)
                     GestureDetector(
                       onTap: () {
-                        selectGachaBox(i);
+                        // 이미 박스를 선택하지 않았을 경우에만 인식
+                        if (!isWaitingGachaResult) {
+                          selectGachaBox(i);
+                        }
                       },
                       child: Image.asset('assets/images/gacha_box.png'),
                     ),

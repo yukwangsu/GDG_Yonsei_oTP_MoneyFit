@@ -5,6 +5,7 @@ import 'package:flutter_financemanager/models/category_expenditure.dart';
 import 'package:flutter_financemanager/models/comparison_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
+import 'package:flutter_financemanager/services/game_service.dart';
 import 'package:flutter_financemanager/services/spending_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure.dart';
@@ -57,6 +58,9 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // 지출 비교 카테고리, 나이, 성별 가져오기
     _initPrefs();
+
+    // 출석 처리
+    GameService.attendance();
   }
 
   String formatCurrency(int amount) {
