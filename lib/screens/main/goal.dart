@@ -324,7 +324,10 @@ class _GoalScreenState extends State<GoalScreen> {
                                       _onClickEditGoalButton(goal.id);
                                     },
                                   );
-                                })
+                                }),
+                                const SizedBox(
+                                  height: 5.0,
+                                ),
                               ]);
                             }
                           },

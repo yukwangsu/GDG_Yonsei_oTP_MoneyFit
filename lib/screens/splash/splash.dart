@@ -4,6 +4,7 @@ import 'package:flutter_financemanager/screens/onboarding/get_info.dart';
 import 'package:flutter_financemanager/screens/signin/signin_screen.dart';
 import 'package:flutter_financemanager/services/signin_service.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({
@@ -17,8 +18,16 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   // result == -1: error, result == 0: 유저 정보를 입력받아야함, result == 1: existing member, result == 2: 구글로그인 필요
   void checkUser() async {
+    // // *** 구글 자동 로그인 방지*** // //
+    final prefs = await SharedPreferences.getInstance();
+    String? email = prefs.getString('moneyfitEmail');
+    if (email != null) {
+      await prefs.remove('moneyfitEmail');
+    }
+    // // *** 구글 자동 로그인 방지*** // //
+
     final result = await SigninService.checkUser();
-    // 1초간 대기
+    // 1.5초간 대기
     await Future.delayed(const Duration(milliseconds: 1500));
     if (result == 0) {
       Navigator.push(

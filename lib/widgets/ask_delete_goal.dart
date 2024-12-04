@@ -68,7 +68,7 @@ class _AskDeleteGoalState extends State<AskDeleteGoal> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      '목표 n을 삭제하시겠습니까?',
+                      '목표를 삭제하시겠습니까?',
                       style: TextStyle(
                           fontSize: 13.0, fontWeight: FontWeight.bold),
                     ),

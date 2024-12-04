@@ -59,8 +59,8 @@ class _HomeScreenState extends State<HomeScreen> {
     // 지출 비교 카테고리, 나이, 성별 가져오기
     _initPrefs();
 
-    // 출석 처리
-    GameService.attendance();
+    // // 출석 처리
+    // GameService.attendance();
   }
 
   String formatCurrency(int amount) {
@@ -91,13 +91,13 @@ class _HomeScreenState extends State<HomeScreen> {
     String lastMonthYear = DateFormat('yyyy').format(lastMonthInKorea);
     String lastMonth = DateFormat('MM').format(lastMonthInKorea);
 
-    double thisMonthTotalSpendingTemp =
+    int thisMonthTotalSpendingTemp =
         await SpendingService.getMonthlySpending(year, month);
-    double lastMonthTotalSpendingTemp =
+    int lastMonthTotalSpendingTemp =
         await SpendingService.getMonthlySpending(lastMonthYear, lastMonth);
     setState(() {
-      thisMonthTotalSpending = thisMonthTotalSpendingTemp.toInt();
-      lastMonthTotalSpending = lastMonthTotalSpendingTemp.toInt();
+      thisMonthTotalSpending = thisMonthTotalSpendingTemp;
+      lastMonthTotalSpending = lastMonthTotalSpendingTemp;
       expenseDifferenceThisAndLastMonth =
           lastMonthTotalSpending - thisMonthTotalSpending;
     });

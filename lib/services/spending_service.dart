@@ -138,7 +138,7 @@ class SpendingService {
   }
 
   // 한달 총 소비 금액
-  static Future<double> getMonthlySpending(
+  static Future<int> getMonthlySpending(
     String year,
     String month,
   ) async {

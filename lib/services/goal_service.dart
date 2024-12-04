@@ -101,9 +101,10 @@ class GoalService {
   // 목표 수정하기
   static Future<bool> editGoalService(
     int id,
-    int amount,
+    int expenseLimit,
   ) async {
-    final url = Uri.parse('$uri/android/expense-objective/update/$id/$amount');
+    final url =
+        Uri.parse('$uri/android/expense-objective/update/$id/$expenseLimit');
 
     // token 가져오기
     final prefs = await SharedPreferences.getInstance();

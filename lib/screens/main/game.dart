@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_financemanager/models/check_attendance.dart';
 import 'package:flutter_financemanager/services/game_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/attendance_widget.dart';
@@ -11,64 +12,103 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen>
+    with SingleTickerProviderStateMixin {
   int weekday = DateTime.now()
       .toUtc()
       .add(const Duration(hours: 9))
       .weekday; // 오늘 요일 가져오기
   late Future<int> userPoint; // 보유 포인트 저장
-  late Future<int> consecutiveDays; // 연속 출석일 저장
+  // late Future<int> consecutiveDays; // 연속 출석일 저장
+  late Future<CheckAttendanceModel> checkAttendance;
   bool isGachaAvailable = false; // 뽑기가 가능한지 저장
   bool isWaitingGachaResult = false; // 뽑기 결과를 기다리는지 저장
-
-  // 추후 삭제
-  // int rewardForFiveDays = -1; // 5일 연속 출석 최대 보상 저장
-  int myPoint = 3632; // 나의 포인트
   final int gachaCost = 1000; // 뽑기 비용
-  final int prizeBoxChance = 2; // 당첨 박스가 존재할 확률(2 -> 1/2)
-  bool isPrizeBoxPresent = false; // 당첨 박스 존재 유무
-  int prizeBoxId = -1; // 당첨 상자 번호
-  //
-
   String mode =
       'intro'; // intro: 처음 화면, gacha: 뽑기 화면, fail: 실패 화면, success: 성공 화면
+
+  // 선물상자 흔들거리는 효과
+  late AnimationController _controller;
+  late Animation<double> _animation;
+
+  // 출석체크 버튼을 눌렀을 경우
+  _onClickAttendanceButton() async {
+    await GameService.attendance(); // 포인트 지급 요청
+    setState(() {
+      // 출석 정보 다시 불러오기
+      checkAttendance = GameService.checkFirstAttendance();
+      // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
+      checkPointAndGacha();
+    });
+  }
 
   @override
   void initState() {
     super.initState();
 
-    // 추후 삭제
-    // initRewardForFiveDays();
-    // checkGachaAvailable();
-    // initPrizeBoxPresent();
-    //
-
-    // setState(() {
-    //   // 보유 포인트 불러오기
-    //   userPoint = GameService.getLeftPoint();
-    // });
-
     // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
     checkPointAndGacha();
 
-    // 연속 출석 일수 불러오기
-    consecutiveDays = GameService.attendance();
+    // 오늘 첫 출석인지 확인
+    checkAttendance = GameService.checkFirstAttendance();
 
-    // 뽑기
-    // GameService.gachaService();
+    // 선물상자 흔들거리는 효과
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 4000), // 흔들림 애니메이션의 지속 시간
+    );
 
-    // 포인트 증가
-    // GameService.addPoint();
+    _animation = TweenSequence<double>([
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -8.0), weight: 1.0),
+      TweenSequenceItem(tween: Tween(begin: -8.0, end: 8.0), weight: 1.0),
+      TweenSequenceItem(tween: Tween(begin: 8.0, end: 0.0), weight: 1.0),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -10.0), weight: 0.9),
+      TweenSequenceItem(tween: Tween(begin: -10.0, end: 10.0), weight: 0.9),
+      TweenSequenceItem(tween: Tween(begin: 10.0, end: 0.0), weight: 0.9),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -12.0), weight: 0.8),
+      TweenSequenceItem(tween: Tween(begin: -12.0, end: 12.0), weight: 0.8),
+      TweenSequenceItem(tween: Tween(begin: 12.0, end: 0.0), weight: 0.8),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -14.0), weight: 0.7),
+      TweenSequenceItem(tween: Tween(begin: -14.0, end: 14.0), weight: 0.7),
+      TweenSequenceItem(tween: Tween(begin: 14.0, end: 0.0), weight: 0.7),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -16.0), weight: 0.6),
+      TweenSequenceItem(tween: Tween(begin: -16.0, end: 16.0), weight: 0.6),
+      TweenSequenceItem(tween: Tween(begin: 16.0, end: 0.0), weight: 0.6),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.5),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.5),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.5),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.4),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.4),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.4),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.3),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.3),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.3),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 0.0, end: -18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: -18.0, end: 18.0), weight: 0.2),
+      TweenSequenceItem(tween: Tween(begin: 18.0, end: 0.0), weight: 0.2),
+    ]).animate(_controller);
   }
-
-  // void initRewardForFiveDays() {
-  //   setState(() {
-  //     for (int i = 0; i < 5; i++) {
-  //       rewardForFiveDays += attendanceReward[
-  //           (weekday + i) > 7 ? weekday + i - 7 : weekday + i]!;
-  //     }
-  //   });
-  // }
 
   // 현재 보유하고 있는 포인트를 가져오고 뽑기 가능여부를 판단
   void checkPointAndGacha() async {
@@ -86,65 +126,33 @@ class _GameScreenState extends State<GameScreen> {
     return userPoint;
   }
 
-  // void checkGachaAvailable() async {
-  //   // 보유 포인트 불러오기
-  //   // myPoint = 3632; // 임시
-  //   if (myPoint >= gachaCost) {
-  //     setState(() {
-  //       isGachaAvailable = true;
-  //     });
-  //   } else {
-  //     setState(() {
-  //       isGachaAvailable = false;
-  //     });
-  //   }
-  // }
-
-  // // 당첨 박스 존재 유무 설정
-  // void initPrizeBoxPresent() {
-  //   isPrizeBoxPresent = Random().nextInt(prizeBoxChance) == 0;
-  // }
-
   // 뽑기 시작 버튼을 눌렀을 때
   void onClickGachaStartButton() {
     setState(() {
       // 화면 모드 변경
       mode = 'gacha';
-      // // 확률
-      // if (isPrizeBoxPresent) {
-      //   // 당첨 박스가 존재할 경우
-      //   prizeBoxId = Random().nextInt(5);
-      // } else {
-      //   // 당첨 박스가 존재하지 않을 경우
-      //   prizeBoxId = -1;
-      // }
-      // // 정답
-      // print('당첨 박스 존재 유무: $isPrizeBoxPresent');
-      // print('당첨 박스 번호: $prizeBoxId');
-      // // 당첨 박스 존재 유무 초기화
-      // initPrizeBoxPresent();
     });
   }
 
   // 뽑기 상자를 선택했을 때
   void selectGachaBox(int number) async {
-    // // 뽑기 비용 차감(추후 api로 대체)
-    // myPoint -= gachaCost;
-
-    // 뽑기 결과 대기
+// 상자 흔들거리는 화면 보여주기 시작
     setState(() {
-      isWaitingGachaResult = true;
+      mode = 'waitingGachaResult';
     });
 
     // 뽑기 api호출
     bool resultGacha = await GameService.gachaService();
 
-    // 뽑기 결과가 나왔을 때
-    setState(() {
-      isWaitingGachaResult = false;
-    });
+    if (resultGacha) {
+      // 당첨된 경우 1초 뒤에 결과 보여줌
+      await Future.delayed(const Duration(seconds: 1));
+    } else {
+      // 당첨이 아닌 경우 결과를 3초 뒤에 보여줌
+      await Future.delayed(const Duration(seconds: 3));
+    }
 
-    // 다음 뽑기 가능한지 확인
+    // 다음 뽑기 가능한지 확인, 보유 포인트 다시 불러옴
     checkPointAndGacha();
 
     // 뽑기 결과 처리
@@ -303,7 +311,7 @@ class _GameScreenState extends State<GameScreen> {
                       // 요일별 출석
 
                       FutureBuilder(
-                        future: consecutiveDays,
+                        future: checkAttendance,
                         builder: (context, snapshot) {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
@@ -319,26 +327,64 @@ class _GameScreenState extends State<GameScreen> {
                             );
                           } else {
                             // 불러온 데이터 저장하기
-                            final int resultConsecutiveDays = snapshot.data!;
-                            return Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                for (int i = 0; i < 5; i++)
-                                  AttendanceWidget(
-                                    // weekday + i 가 7보다 클 경우 -7을 해줌.
-                                    day: dayText[(weekday + i) > 7
-                                        ? weekday + i - 7
-                                        : weekday + i]!,
-                                    // point: attendanceReward[(weekday + i) > 7
-                                    //     ? weekday + i - 7
-                                    //     : weekday + i]!,
-                                    point: attendanceReward[i + 1]!,
-                                    checked: i + 1 <= resultConsecutiveDays
-                                        ? true
-                                        : false,
-                                  )
-                              ],
-                            );
+                            final CheckAttendanceModel checkAttendanceResult =
+                                snapshot.data!;
+
+                            // 이전에 5일 연속 출석했고 오늘(출석 6일차) 보상을 안 받았을 때
+                            if (checkAttendanceResult.doesGetPointsToday ==
+                                    false &&
+                                checkAttendanceResult
+                                        .consecutiveDaysBeforeGetAttendancePoints ==
+                                    5) {
+                              // 오늘이 몇 번째 칸인지 저장
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  for (int i = 0; i < 5; i++)
+                                    AttendanceWidget(
+                                      // // weekday + i 가 7보다 클 경우 -7을 해줌.
+                                      // day: dayText[(weekday + i) > 7
+                                      //     ? weekday + i - 7
+                                      //     : weekday + i]!,
+                                      day: '${i + 1}일차',
+                                      point: attendanceReward[i + 1]!,
+                                      checked: false, // 5일 출석을 다 했기 때문에 모두 체크 X
+                                      isCheckable: (i == 0),
+                                      onClickAttendance:
+                                          _onClickAttendanceButton,
+                                    )
+                                ],
+                              );
+                            } else {
+                              return Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  for (int i = 0; i < 5; i++)
+                                    AttendanceWidget(
+                                      // // weekday + i 가 7보다 클 경우 -7을 해줌.
+                                      // day: dayText[(weekday + i) > 7
+                                      //     ? weekday + i - 7
+                                      //     : weekday + i]!,
+                                      day: '${i + 1}일차',
+                                      point: attendanceReward[i + 1]!,
+                                      checked: i + 1 <=
+                                              checkAttendanceResult
+                                                  .consecutiveDaysBeforeGetAttendancePoints
+                                          ? true
+                                          : false,
+                                      isCheckable: (!checkAttendanceResult
+                                              .doesGetPointsToday &&
+                                          i ==
+                                              checkAttendanceResult
+                                                  .consecutiveDaysBeforeGetAttendancePoints),
+                                      onClickAttendance:
+                                          _onClickAttendanceButton,
+                                    )
+                                ],
+                              );
+                            }
                           }
                         },
                       ),
@@ -371,7 +417,9 @@ class _GameScreenState extends State<GameScreen> {
                         ? gacha()
                         : mode == 'gacha_success'
                             ? gachaSuccess()
-                            : gachaFail(),
+                            : mode == 'gacha_fail'
+                                ? gachaFail()
+                                : gachaWaitingResult(),
               ),
             ),
 
@@ -467,10 +515,11 @@ class _GameScreenState extends State<GameScreen> {
                   for (int i = 0; i < 3; i++)
                     GestureDetector(
                       onTap: () {
-                        // 이미 박스를 선택하지 않았을 경우에만 인식
-                        if (!isWaitingGachaResult) {
-                          selectGachaBox(i);
-                        }
+                        // // 이미 박스를 선택하지 않았을 경우에만 인식
+                        // if (!isWaitingGachaResult) {
+                        //   selectGachaBox(i);
+                        // }
+                        selectGachaBox(i);
                       },
                       child: Image.asset('assets/images/gacha_box.png'),
                     ),
@@ -483,10 +532,11 @@ class _GameScreenState extends State<GameScreen> {
                   for (int i = 3; i < 5; i++)
                     GestureDetector(
                       onTap: () {
-                        // 이미 박스를 선택하지 않았을 경우에만 인식
-                        if (!isWaitingGachaResult) {
-                          selectGachaBox(i);
-                        }
+                        // // 이미 박스를 선택하지 않았을 경우에만 인식
+                        // if (!isWaitingGachaResult) {
+                        //   selectGachaBox(i);
+                        // }
+                        selectGachaBox(i);
                       },
                       child: Image.asset('assets/images/gacha_box.png'),
                     ),
@@ -496,11 +546,11 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
 
-        // 뽑기 결과를 기다릴 때
-        if (isWaitingGachaResult)
-          Container(
-            child: const Center(child: CircularProgressIndicator()),
-          ),
+        // // 뽑기 결과를 기다릴 때
+        // if (isWaitingGachaResult)
+        //   Container(
+        //     child: const Center(child: CircularProgressIndicator()),
+        //   ),
       ],
     );
   }
@@ -593,6 +643,39 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  // 5. 뽑기 결과 대기 화면(상자가 흔들거리는 효과)
+  Widget gachaWaitingResult() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        const SizedBox(
+          height: 20.0,
+        ),
+        // 텍스트
+        const Text(
+          '두구두구두구',
+          style: TextStyle(
+            fontSize: 13.0,
+          ),
+        ),
+        const SizedBox(
+          height: 5.0,
+        ),
+        const Text(
+          '결과 대기 중..',
+          style: TextStyle(
+            fontSize: 24.0,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        const SizedBox(height: 13.0),
+        // 선물 상자
+        _buildGachaBox(),
+      ],
+    );
+  }
+
+  // 뽑기 시작 버튼
   Widget gachaButton(String content) {
     return Opacity(
       opacity: isGachaAvailable ? 1.0 : 0.4,
@@ -629,6 +712,25 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ),
       ),
+    );
+  }
+
+  // 뽑기 상자 위젯
+  Widget _buildGachaBox() {
+    _controller.reset();
+    _controller.forward();
+    return AnimatedBuilder(
+      animation: _animation,
+      builder: (context, child) {
+        return Transform.translate(
+          offset: Offset(_animation.value, 0), // X축으로 흔들림 효과
+          child: child,
+        );
+      },
+      child: SizedBox(
+          height: 185.0,
+          width: 280.0,
+          child: Image.asset('assets/images/gacha_success.png')),
     );
   }
 }
