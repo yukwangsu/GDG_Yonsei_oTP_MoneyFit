@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_financemanager/services/notification_service.dart';
 import 'package:flutter_financemanager/services/spending_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure_select_category.dart';
 import 'package:flutter_financemanager/widgets/number_input_format.dart';
 import 'package:flutter_financemanager/widgets/select_button.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:intl/intl.dart';
 
 class AddExpenditure extends StatefulWidget {
-  const AddExpenditure({super.key});
+  const AddExpenditure({
+    super.key,
+  });
 
   @override
   State<AddExpenditure> createState() => _AddExpenditureState();
@@ -19,6 +23,8 @@ class _AddExpenditureState extends State<AddExpenditure> {
   final TextEditingController amountController =
       TextEditingController(); // 지출 금액 컨트롤러
   final FocusNode _focusNode = FocusNode();
+  // // 푸시 알림
+  // late FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin;
 
   @override
   void initState() {
@@ -31,7 +37,36 @@ class _AddExpenditureState extends State<AddExpenditure> {
         setState(() {});
       }
     });
+
+    // // 플러그인 초기화
+    // flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
+    // const AndroidInitializationSettings initializationSettingsAndroid =
+    //     AndroidInitializationSettings('@mipmap/ic_launcher'); // Android 아이콘 설정
+    // const InitializationSettings initializationSettings =
+    //     InitializationSettings(android: initializationSettingsAndroid);
+    // flutterLocalNotificationsPlugin.initialize(initializationSettings);
   }
+
+  // // 푸시 알림 보내는 함수
+  // Future<void> showNotification() async {
+  //   const AndroidNotificationDetails androidDetails =
+  //       AndroidNotificationDetails(
+  //     'channel_id', // 채널 ID
+  //     'channel_name', // 채널 이름
+  //     importance: Importance.high,
+  //     priority: Priority.high,
+  //   );
+
+  //   const NotificationDetails notificationDetails =
+  //       NotificationDetails(android: androidDetails);
+
+  //   await flutterLocalNotificationsPlugin.show(
+  //     0, // 알림 ID
+  //     '푸시 알림', // 제목
+  //     '버튼 클릭 시 표시되는 푸시 알림입니다.', // 내용
+  //     notificationDetails,
+  //   );
+  // }
 
   // 확인 버튼을 눌렀을 때
   void onClickConfirmButton() async {
@@ -42,19 +77,100 @@ class _AddExpenditureState extends State<AddExpenditure> {
       // 날짜를 원하는 형식으로 포맷팅
       String formattedDate =
           DateFormat('yyyy-MM-ddTHH:mm:ss').format(nowInKorea);
+      String month = formattedDate.split('T')[0].split('-')[1];
+      String day = formattedDate.split('T')[0].split('-')[2];
       // DateFormat('yyyy-MM-dd').format(nowInKorea);
       // 지출 금액을 int 형식으로 변환
       int amount = int.parse(amountController.text.split(',').join());
 
       // 지출 추가하는 api 호출
-      final addSpendingResult = await SpendingService.addSpending(
+      final isOutlier = await SpendingService.addSpending(
         categoryToUpperMap[selectedCategory]!,
         formattedDate,
         // '2024-10-25T10:26:29',
         amount,
       );
-      Navigator.of(context).pop(addSpendingResult);
+      Navigator.of(context).pop(true);
+
+      // 비정상적인 지출일 경우 푸시 알림 보내기
+      if (amount >= 80000 && selectedCategory == '식비') {
+        NotificationService().showNotification(
+            '$month월 $day일에 $selectedCategory 과소비를 하셨군요. 주의해주세요!');
+      }
+      // NotificationService().showNotification(
+      //     '$month월 $day일에 $selectedCategory 과소비를 하셨군요. 주의해주세요!');
     }
+  }
+
+  // 확인 버튼을 길게 눌렀을 때 -> 모델 돌리기
+  void onClickConfirmAndMLButton() async {
+    // 지출 추가하는 api 호출
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-10T09:10:10',
+    //   11000,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-11T09:10:10',
+    //   12000,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-12T09:10:10',
+    //   10000,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-13T09:10:10',
+    //   11000,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-14T09:10:10',
+    //   10500,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-15T09:10:10',
+    //   11300,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-16T09:10:10',
+    //   12100,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-17T09:10:10',
+    //   9800,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-18T09:10:10',
+    //   10100,
+    // );
+    // await SpendingService.addSpending(
+    //   'FOOD',
+    //   '2024-11-19T09:10:10',
+    //   10000,
+    // );
+    final addSpendingResult = await SpendingService.addSpending(
+      'FOOD',
+      '2024-11-20T09:10:10',
+      300000,
+    );
+
+    if (addSpendingResult) {
+      print('과거 지출 10개 추가 성공!!!');
+    }
+    // 화면 돌아가기
+    Navigator.of(context).pop(true);
+
+    // 모델 돌리리는 api
+    // await SpendingService.createModel();
+
+    // print('####모델 생성 성공####');
   }
 
   // 취소 버튼을 눌렀을 때
@@ -243,22 +359,25 @@ class _AddExpenditureState extends State<AddExpenditure> {
   Widget confirmButton() {
     return Expanded(
       child: SelectButton(
-        height: 31.0,
-        padding: 33.0,
-        bgColor: selectedCategory.isNotEmpty && amountController.text.isNotEmpty
-            ? const Color(0xFFD2E0FB)
-            : const Color.fromARGB(255, 239, 244, 252),
-        radius: 5,
-        text: '확인',
-        textColor:
-            selectedCategory.isNotEmpty && amountController.text.isNotEmpty
-                ? Colors.black
-                : Colors.grey,
-        textSize: 13.0,
-        onPress: () {
-          onClickConfirmButton();
-        },
-      ),
+          height: 31.0,
+          padding: 33.0,
+          bgColor:
+              selectedCategory.isNotEmpty && amountController.text.isNotEmpty
+                  ? const Color(0xFFD2E0FB)
+                  : const Color.fromARGB(255, 239, 244, 252),
+          radius: 5,
+          text: '확인',
+          textColor:
+              selectedCategory.isNotEmpty && amountController.text.isNotEmpty
+                  ? Colors.black
+                  : Colors.grey,
+          textSize: 13.0,
+          onPress: () {
+            onClickConfirmButton();
+          },
+          longPress: () {
+            onClickConfirmAndMLButton();
+          }),
     );
   }
 

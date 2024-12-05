@@ -12,6 +12,7 @@ class SelectButton extends StatelessWidget {
   final double? borderWidth; // 테두리 두께
   final double? borderOpacity; // 테두리 투명도
   final Function onPress;
+  final Function? longPress;
 
   const SelectButton({
     super.key,
@@ -26,6 +27,7 @@ class SelectButton extends StatelessWidget {
     this.borderWidth,
     this.borderOpacity,
     required this.onPress,
+    this.longPress,
   });
 
   @override
@@ -34,6 +36,7 @@ class SelectButton extends StatelessWidget {
       height: height,
       child: TextButton(
         onPressed: () => onPress(), // 함수를 호출하지 않고 참조를 전달
+        onLongPress: () => longPress != null ? longPress!() : onPress(),
         style: TextButton.styleFrom(
           padding: EdgeInsets.symmetric(
             horizontal: padding,

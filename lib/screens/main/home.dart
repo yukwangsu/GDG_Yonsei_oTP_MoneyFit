@@ -6,12 +6,14 @@ import 'package:flutter_financemanager/models/comparison_model.dart';
 import 'package:flutter_financemanager/models/expenditure_model.dart';
 import 'package:flutter_financemanager/models/pie_chart_model.dart';
 import 'package:flutter_financemanager/services/game_service.dart';
+import 'package:flutter_financemanager/services/notification_service.dart';
 import 'package:flutter_financemanager/services/spending_service.dart';
 import 'package:flutter_financemanager/variables.dart';
 import 'package:flutter_financemanager/widgets/add_expenditure.dart';
 import 'package:flutter_financemanager/widgets/edit_comparison_category.dart';
 import 'package:flutter_financemanager/widgets/list_border_line.dart';
 import 'package:flutter_financemanager/widgets/pie_chart.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -47,6 +49,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
 
+    _requestNotificationPermissions(); // 알림 권한 요청
+
     // 이번달, 저번달 지출 불러오기
     _getMonthlySpending();
 
@@ -61,6 +65,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
     // // 출석 처리
     // GameService.attendance();
+  }
+
+  void _requestNotificationPermissions() async {
+    //알림 권한 요청
+    final status = await NotificationService().requestNotificationPermissions();
   }
 
   String formatCurrency(int amount) {

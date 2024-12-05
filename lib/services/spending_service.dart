@@ -43,15 +43,49 @@ class SpendingService {
       if (response.statusCode >= 200 && response.statusCode < 300) {
         print('addSpending 성공');
         print(response.body);
-        return true;
+        final responseData = json.decode(response.body);
+        return responseData['isOutlier'];
       } else {
         print('addSpending 실패');
         print(response.body);
-        return false;
+        throw Error();
       }
     } catch (e) {
       print('Error during addSpending: $e');
-      return false;
+      throw Error();
+    }
+  }
+
+  //모델 생성하기
+  static Future<bool> createModel() async {
+    final url = Uri.parse('$uri/android/analysis/updateModel');
+
+    // token 가져오기
+    final prefs = await SharedPreferences.getInstance();
+    String? token = prefs.getString('moneyfitAccessToken');
+
+    print('*****token: $token*****');
+
+    var headers = {
+      'Authorization': 'Bearer $token',
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      final response = await http.post(url, headers: headers);
+      print('----------createModel----------');
+      print('Response status: ${response.statusCode}');
+
+      if (response.statusCode >= 200 && response.statusCode < 300) {
+        return true;
+      } else {
+        print('createModel 실패');
+        print(response.body);
+        throw Error();
+      }
+    } catch (e) {
+      print('Error during createModel: $e');
+      throw Error();
     }
   }
 
